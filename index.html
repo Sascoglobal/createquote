@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SASCO Global – Freight Quotation Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1B2A4A;--navy2:#2E4D8B;--blue:#4472C4;
+  --orange:#E8630A;--orange-lt:#FDEBD0;--alt:#EBF1F8;
+  --gold:#F5C518;--white:#fff;--text:#1a202c;
+  --muted:#6b7280;--border:#d1d5db;--bg:#f0f4f8;
+  --green:#16a34a;--red:#dc2626;
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+.app-hdr{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.35);}
+.hdr-in{max-width:1160px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:14px;}
+.logo-sq{width:46px;height:46px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;letter-spacing:-2px;flex-shrink:0;}
+.brand-txt h1{color:#fff;font-size:17px;font-weight:700;}
+.brand-txt p{color:var(--gold);font-size:11px;margin-top:2px;}
+.hdr-badge{background:var(--orange);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;}
+
+/* ── MAIN ── */
+.main{max-width:1160px;margin:0 auto;padding:24px 20px 90px;}
+
+/* ── CARD ── */
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.09);margin-bottom:18px;overflow:hidden;}
+.card-hdr{background:var(--navy);padding:11px 20px;display:flex;align-items:center;gap:10px;}
+.step-num{background:var(--orange);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.card-hdr h2{color:#fff;font-size:13px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+.card-body{padding:20px;}
+
+/* ── CHIPS ── */
+.sel-section{margin-bottom:16px;}
+.sel-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;display:block;}
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:7px 15px;border:2px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.chip:hover{border-color:var(--navy2);color:var(--navy2);}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+.sel-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
+@media(max-width:800px){.sel-row{grid-template-columns:1fr 1fr;}}
+
+/* ── FORM ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg.three{grid-template-columns:1fr 1fr 1fr;}
+.fg.four{grid-template-columns:1fr 1fr 1fr 1fr;}
+@media(max-width:640px){.fg,.fg.three,.fg.four{grid-template-columns:1fr;}}
+.fgrp{display:flex;flex-direction:column;gap:4px;}
+.fgrp.full{grid-column:1/-1;}
+.fgrp label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.fgrp input,.fgrp select,.fgrp textarea{
+  border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;
+  font-size:13px;color:var(--text);background:#fafafa;font-family:inherit;transition:border-color .15s;
+}
+.fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{outline:none;border-color:var(--navy2);background:#fff;}
+.fgrp textarea{resize:vertical;min-height:70px;}
+
+/* ── CHARGES TABLE ── */
+.tbl-wrap{overflow-x:auto;}
+table.ctbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.ctbl thead th{background:var(--navy);color:#fff;padding:9px 8px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+.ctbl thead th.r{text-align:right;}
+.ctbl .sec-row td{background:var(--orange);color:#fff;font-weight:700;font-size:11px;padding:6px 8px;text-transform:uppercase;letter-spacing:.4px;}
+.ctbl tbody tr:not(.sec-row):nth-child(even) td{background:var(--alt);}
+.ctbl tbody tr:not(.sec-row) td{padding:6px 8px;border-bottom:1px solid #e5e7eb;vertical-align:middle;}
+.ctbl input[type=text],.ctbl input[type=number]{
+  border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:12px;width:100%;background:#fff;font-family:inherit;
+}
+.ctbl input:focus{outline:none;border-color:var(--navy2);}
+.ctbl .amt{font-weight:700;text-align:right;color:var(--navy);white-space:nowrap;font-size:12px;}
+.del-btn{background:none;border:none;color:#ef4444;cursor:pointer;font-size:15px;padding:2px 6px;border-radius:4px;}
+.del-btn:hover{background:#fef2f2;}
+
+/* ── ADD SECTION CONTROLS ── */
+.add-area{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;}
+.add-btn{background:none;border:2px dashed var(--border);color:var(--navy2);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s;}
+.add-btn:hover{border-color:var(--navy2);background:var(--alt);}
+.sec-name-inp{border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;background:#fafafa;font-family:inherit;width:200px;}
+.sec-name-inp:focus{outline:none;border-color:var(--navy2);}
+.add-sec-confirm{background:var(--navy2);color:#fff;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;}
+
+/* ── TOTALS ── */
+.totals-wrap{display:flex;justify-content:flex-end;margin-top:16px;}
+.totals-box{min-width:310px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.tot-row{display:flex;justify-content:space-between;padding:9px 16px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;}
+.tot-row:last-child{border-bottom:none;}
+.tot-row.sub{background:var(--alt);}
+.tot-row.vat{background:var(--orange-lt);}
+.tot-row.grand{background:var(--navy);color:#fff;font-weight:700;font-size:15px;}
+.tot-val{font-weight:700;font-family:'Courier New',monospace;}
+
+/* ── T&C SECTION ── */
+.tc-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);margin-bottom:8px;background:#fafafa;transition:all .15s;}
+.tc-item:hover{border-color:var(--navy2);background:#fff;}
+.tc-item input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--navy);flex-shrink:0;cursor:pointer;}
+.tc-item textarea{border:none;background:transparent;font-size:13px;color:var(--text);resize:none;width:100%;font-family:inherit;line-height:1.5;outline:none;min-height:40px;}
+.tc-item textarea:focus{background:#fff;}
+.tc-item .tc-del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;padding:2px;flex-shrink:0;opacity:.6;}
+.tc-item .tc-del:hover{opacity:1;}
+.tc-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-right:6px;text-transform:uppercase;}
+.tc-tag.common{background:#dbeafe;color:#1d4ed8;}
+.tc-tag.mode{background:#dcfce7;color:#15803d;}
+.tc-group-hdr{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
+.tc-group-hdr::after{content:'';flex:1;height:1px;background:var(--border);}
+.add-tc-row{display:flex;gap:8px;margin-top:10px;}
+.add-tc-inp{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;background:#fafafa;}
+.add-tc-inp:focus{outline:none;border-color:var(--navy2);}
+.add-tc-btn{background:var(--navy);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+
+/* ── CURRENCY BAR ── */
+.cur-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.cur-bar label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.cur-bar select{border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;background:#fff;}
+
+/* ── GENERATE BAR ── */
+.gen-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--orange);padding:12px 24px;display:flex;justify-content:center;gap:12px;z-index:50;box-shadow:0 -4px 14px rgba(0,0,0,.12);}
+.gen-btn{background:var(--orange);color:#fff;border:none;padding:13px 36px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;}
+.gen-btn:hover{background:#c85208;transform:translateY(-1px);}
+.reset-btn{background:#fff;color:var(--navy);border:2px solid var(--navy);padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
+.reset-btn:hover{background:var(--alt);}
+
+.hidden{display:none!important;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.info-txt{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
+.badge-inco{display:inline-block;background:var(--alt);color:var(--navy2);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-left:8px;}
+</style>
+</head>
+<body>
+
+<header class="app-hdr">
+  <div class="hdr-in">
+    <div class="brand">
+      <div class="logo-sq">SG</div>
+      <div class="brand-txt">
+        <h1>SASCO GLOBAL FREIGHT &amp; LOGISTICS LLC</h1>
+        <p>Dubai, UAE &nbsp;|&nbsp; www.sascoglobal.com &nbsp;|&nbsp; info@sascoglobal.com</p>
+      </div>
+    </div>
+    <div class="hdr-badge">📄 Quotation Generator</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ── STEP 1: TYPE ── -->
+  <div class="card">
+    <div class="card-hdr"><div class="step-num">1</div><h2>Quotation Type &amp; Mode</h2></div>
+    <div class="card-body">
+      <div class="sel-row">
+        <div class="sel-section">
+          <span class="sel-label">🚢 Mode of Transport</span>
+          <div class="chip-group" id="chips-mode">
+            <button class="chip active" data-val="sea">🚢 Sea</button>
+            <button class="chip" data-val="air">✈️ Air</button>
+            <button class="chip" data-val="land">🚛 Land</button>
+            <button class="chip" data-val="warehouse">🏭 Warehousing</button>
+          </div>
+        </div>
+        <div class="sel-section" id="sec-direction">
+          <span class="sel-label">📌 Direction</span>
+          <div class="chip-group" id="chips-dir">
+            <button class="chip active" data-val="import">⬇️ Import</button>
+            <button class="chip" data-val="export">⬆️ Export</button>
+          </div>
+        </div>
+        <div class="sel-section" id="sec-container">
+          <span class="sel-label">📦 Load Type</span>
+          <div class="chip-group" id="chips-cnt">
+            <button class="chip active" data-val="fcl">FCL</button>
+            <button class="chip" data-val="lcl">LCL</button>
+          </div>
+        </div>
+        <div class="sel-section">
+          <span class="sel-label">🎁 Cargo Nature</span>
+          <div class="chip-group" id="chips-cargo">
+            <button class="chip active" data-val="palletized">🟫 Palletized</button>
+            <button class="chip" data-val="loose">📦 Loose</button>
+            <button class="chip" data-val="mixed">🔀 Mixed</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sel-section">
+        <span class="sel-label">📋 Incoterms (Terms of Sale)</span>
+        <div class="chip-group" id="chips-inco">
+          <button class="chip" data-val="EXW">EXW</button>
+          <button class="chip active" data-val="FOB">FOB</button>
+          <button class="chip" data-val="FCA">FCA</button>
+          <button class="chip" data-val="FAS">FAS</button>
+          <button class="chip" data-val="CFR">CFR</button>
+          <button class="chip" data-val="CIF">CIF</button>
+          <button class="chip" data-val="CPT">CPT</button>
+          <button class="chip" data-val="CIP">CIP</button>
+          <button class="chip" data-val="DAP">DAP</button>
+          <button class="chip" data-val="DPU">DPU</button>
+          <button class="chip" data-val="DDP">DDP</button>
+        </div>
+        <p class="info-txt" id="inco-desc"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: SHIPMENT ── -->
+  <div class="card">
+    <div class="card-hdr"><div class="step-num">2</div><h2>Shipment Details</h2></div>
+    <div class="card-body">
+      <div class="fg four" style="margin-bottom:16px;">
+        <div class="fgrp"><label>Quotation No.</label><input type="text" id="f-quotno" placeholder="e.g., SG-2026-0001"></div>
+        <div class="fgrp"><label>Date</label><input type="date" id="f-date"></div>
+        <div class="fgrp"><label>Valid Until</label><input type="date" id="f-valid"></div>
+        <div class="fgrp"><label>Prepared By</label><input type="text" id="f-prepby" placeholder="Name / Department"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="fg">
+        <div class="fgrp"><label id="lbl-pol">Port of Loading (POL)</label><input type="text" id="f-pol" placeholder="e.g., Shanghai Port, China"></div>
+        <div class="fgrp"><label id="lbl-pod">Port of Discharge (POD)</label><input type="text" id="f-pod" placeholder="e.g., Jebel Ali Port, Dubai, UAE"></div>
+        <div class="fgrp"><label id="lbl-delivery">Final Place of Delivery</label><input type="text" id="f-delivery" placeholder="e.g., Customer Warehouse, Mainland UAE"></div>
+        <div class="fgrp"><label>Commodity / Goods Description</label><input type="text" id="f-commodity" placeholder="e.g., General Cargo, Electronics, Textiles"></div>
+      </div>
+      <div class="divider"></div>
+      <div id="cargo-fields"></div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: CLIENT ── -->
+  <div class="card">
+    <div class="card-hdr"><div class="step-num">3</div><h2>Client / Customer Details</h2></div>
+    <div class="card-body">
+      <div class="fg">
+        <div class="fgrp"><label>Company Name</label><input type="text" id="f-company" placeholder="Customer Company Name"></div>
+        <div class="fgrp"><label>Contact Person</label><input type="text" id="f-contact" placeholder="Full Name"></div>
+        <div class="fgrp"><label>Email Address</label><input type="email" id="f-email" placeholder="email@company.com"></div>
+        <div class="fgrp"><label>Phone / WhatsApp</label><input type="text" id="f-phone" placeholder="+971 XX XXX XXXX"></div>
+        <div class="fgrp full"><label>Address (optional)</label><input type="text" id="f-address" placeholder="Customer address"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: CHARGES ── -->
+  <div class="card">
+    <div class="card-hdr"><div class="step-num">4</div><h2>Charges Breakdown</h2></div>
+    <div class="card-body">
+      <div class="cur-bar">
+        <label>Base Currency:</label>
+        <select id="f-currency">
+          <option value="USD">USD – US Dollar</option>
+          <option value="AED">AED – UAE Dirham</option>
+          <option value="EUR">EUR – Euro</option>
+          <option value="GBP">GBP – British Pound</option>
+        </select>
+        <label style="margin-left:16px;">VAT Rate:</label>
+        <select id="f-vat">
+          <option value="0.05">5% (UAE Standard)</option>
+          <option value="0">0% (Exempt / Out-of-Scope)</option>
+          <option value="0.10">10%</option>
+        </select>
+        <span style="margin-left:auto;font-size:12px;color:var(--muted);">💡 Click a row to edit. Rate × Qty = Amount.</span>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="ctbl" id="charges-tbl">
+          <thead>
+            <tr>
+              <th style="width:30px;">#</th>
+              <th style="min-width:200px;">Description of Charges</th>
+              <th style="width:105px;">Unit</th>
+              <th style="width:90px;" class="r">Rate</th>
+              <th style="width:80px;" class="r">Qty / Wt</th>
+              <th style="width:105px;" class="r">Amount</th>
+              <th style="width:65px;">Ccy</th>
+              <th style="min-width:115px;">Remarks</th>
+              <th style="width:34px;"></th>
+            </tr>
+          </thead>
+          <tbody id="charges-body"></tbody>
+        </table>
+      </div>
+
+      <!-- ADD CONTROLS -->
+      <div class="add-area">
+        <button class="add-btn" id="btn-add-row">＋ Add Charge Line</button>
+        <span style="font-size:12px;color:var(--muted);">|</span>
+        <input type="text" class="sec-name-inp" id="new-sec-name" placeholder="New section name…">
+        <button class="add-sec-confirm" id="btn-add-sec">＋ Add Section</button>
+      </div>
+
+      <div class="totals-wrap">
+        <div class="totals-box">
+          <div class="tot-row sub"><span>Subtotal (before VAT)</span><span class="tot-val" id="tot-sub">USD 0.00</span></div>
+          <div class="tot-row vat"><span>VAT (<span id="vat-pct-lbl">5%</span>)</span><span class="tot-val" id="tot-vat">USD 0.00</span></div>
+          <div class="tot-row grand"><span>GRAND TOTAL</span><span class="tot-val" id="tot-grand">USD 0.00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: TERMS & CONDITIONS ── -->
+  <div class="card">
+    <div class="card-hdr"><div class="step-num">5</div><h2>Terms &amp; Conditions <span id="tc-mode-badge" class="badge-inco"></span></h2></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+        ✅ Checked terms will be printed on the PDF. Uncheck to exclude. Click any term to edit its text.
+      </p>
+      <div id="tc-common-hdr" class="tc-group-hdr">Standard Terms (All Modes)</div>
+      <div id="tc-common-list"></div>
+      <div id="tc-mode-hdr" class="tc-group-hdr">Mode-Specific Terms</div>
+      <div id="tc-mode-list"></div>
+      <div class="add-tc-row">
+        <input type="text" class="add-tc-inp" id="tc-custom-inp" placeholder="Type a custom term and click Add…">
+        <button class="add-tc-btn" id="btn-add-tc">＋ Add Custom Term</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 6: NOTES ── -->
+  <div class="card">
+    <div class="card-hdr"><div class="step-num">6</div><h2>Notes &amp; Special Instructions</h2></div>
+    <div class="card-body">
+      <div class="fg">
+        <div class="fgrp full"><label>Quotation Notes / Special Conditions (printed on PDF)</label>
+          <textarea id="f-notes" rows="3" placeholder="e.g., Rates are valid for cargo ready by 15-Mar-2026. Customs duty will be charged at actuals as assessed by FCA…"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- GENERATE BAR -->
+<div class="gen-bar">
+  <button class="reset-btn" onclick="resetForm()">🔄 Reset</button>
+  <button class="gen-btn" onclick="generatePDF()">📄 Generate &amp; Download PDF</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const S = {
+  mode:'sea', dir:'import', cnt:'fcl', cargo:'palletized', inco:'FOB',
+  charges:[], terms:[], currency:'USD', vatRate:0.05,
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INCOTERMS
+// ═══════════════════════════════════════════════════════════════
+const INCO_DESC = {
+  EXW:'Ex Works — Buyer collects from seller\'s premises; all costs & risks from that point are buyer\'s.',
+  FOB:'Free On Board — Seller covers export customs & loading; buyer covers ocean freight, insurance & all destination costs.',
+  FCA:'Free Carrier — Seller delivers to named carrier or location; risk transfers at that point.',
+  FAS:'Free Alongside Ship — Seller delivers cargo alongside vessel; buyer handles loading, freight & destination.',
+  CFR:'Cost & Freight — Seller pays ocean freight to destination port; buyer covers insurance & destination charges.',
+  CIF:'Cost, Insurance & Freight — Seller pays ocean freight & insurance; buyer handles destination clearance & delivery.',
+  CPT:'Carriage Paid To — Seller pays freight to named destination; risk transfers at first carrier handover.',
+  CIP:'Carriage & Insurance Paid To — Like CPT but seller must provide cargo insurance (ICC A minimum).',
+  DAP:'Delivered At Place — Seller delivers to named place, ready to unload, duties unpaid; buyer pays import duties.',
+  DPU:'Delivered At Place Unloaded — Seller delivers & unloads at destination; buyer pays import duties.',
+  DDP:'Delivered Duty Paid — Seller bears all costs including import duties, taxes & final delivery.',
+};
+
+// ═══════════════════════════════════════════════════════════════
+// CHARGE TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATES = {
+  'sea-import-fcl':[
+    {sec:'ORIGIN CHARGES',rows:[
+      {d:'Origin Port Handling / THC',u:'Per Container',r:'',q:1,rem:''},
+      {d:'Bill of Lading (B/L) Fee',u:'Per B/L',r:'',q:1,rem:''},
+      {d:'Origin Documentation Fee',u:'Per Shipment',r:'',q:1,rem:''},
+    ]},
+    {sec:'OCEAN FREIGHT',rows:[
+      {d:"Ocean Freight — 20'GP",u:'Per Container',r:'',q:0,rem:''},
+      {d:"Ocean Freight — 40'GP",u:'Per Container',r:'',q:0,rem:''},
+      {d:"Ocean Freight — 40'HC",u:'Per Container',r:'',q:0,rem:''},
+      {d:'BAF / Bunker Surcharge',u:'Per Container',r:'',q:0,rem:'If applicable'},
+      {d:'Emergency Risk Surcharge (ERS)',u:'Per Container',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'DESTINATION — JEBEL ALI PORT',rows:[
+      {d:'Destination THC / Port Handling',u:'Per Container',r:'',q:1,rem:''},
+      {d:'Port Storage (after free days)',u:'Per Container/Day',r:'',q:0,rem:'Actuals if applicable'},
+      {d:'Delivery Order (D/O) Fee',u:'Per B/L',r:'',q:1,rem:'Shipping line fee'},
+      {d:'Customs Scanning / Examination',u:'Per Container',r:'',q:0,rem:'If selected by Customs'},
+    ]},
+    {sec:'CUSTOMS CLEARANCE',rows:[
+      {d:'Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:'Filed with FCA'},
+      {d:'Customs Duty & VAT',u:'Actuals',r:'',q:1,rem:'As assessed by FCA'},
+      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
+    ]},
+    {sec:'TRANSPORT & DELIVERY',rows:[
+      {d:"Container Delivery — 20'GP (Dubai)",u:'Per Container',r:'',q:0,rem:'To customer warehouse'},
+      {d:"Container Delivery — 40'/40'HC (Dubai)",u:'Per Container',r:'',q:0,rem:''},
+      {d:'Out-of-Dubai Delivery (Other Emirates)',u:'Per Container',r:'',q:0,rem:'Quote on request'},
+      {d:'Container Offloading / Tailgate',u:'Per Container',r:'',q:0,rem:'If required'},
+    ]},
+  ],
+  'sea-import-lcl':[
+    {sec:'ORIGIN CHARGES',rows:[
+      {d:'Origin CFS / Stuffing Charges',u:'Per CBM',r:'',q:0,rem:'Min: 1 CBM'},
+      {d:'Origin B/L / Documentation Fee',u:'Per Shipment',r:'',q:1,rem:''},
+      {d:'Origin THC',u:'Per CBM',r:'',q:0,rem:''},
+    ]},
+    {sec:'OCEAN FREIGHT',rows:[
+      {d:'Ocean Freight',u:'Per CBM / W/M',r:'',q:0,rem:'Higher of weight or measure'},
+      {d:'BAF / Bunker Surcharge',u:'Per CBM',r:'',q:0,rem:'If applicable'},
+      {d:'Origin Inland Surcharge (OIS)',u:'Per CBM',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'DESTINATION — JEBEL ALI CFS',rows:[
+      {d:'Destination CFS / Unstuffing',u:'Per CBM',r:'',q:0,rem:'At Jebel Ali CFS'},
+      {d:'Destination THC',u:'Per CBM',r:'',q:0,rem:''},
+      {d:'CFS Storage (after free days)',u:'Per CBM/Day',r:'',q:0,rem:'Actuals'},
+      {d:'Delivery Order (D/O) Fee',u:'Per B/L',r:'',q:1,rem:''},
+    ]},
+    {sec:'CUSTOMS CLEARANCE',rows:[
+      {d:'Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'Customs Duty & VAT',u:'Actuals',r:'',q:1,rem:'FCA assessment'},
+      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
+    ]},
+    {sec:'TRANSPORT & DELIVERY',rows:[
+      {d:'Local Delivery — Dubai (up to 10 CBM)',u:'Per Shipment',r:'',q:0,rem:''},
+      {d:'Local Delivery — Per CBM (> 10 CBM)',u:'Per CBM',r:'',q:0,rem:''},
+      {d:'Out-of-Dubai Delivery',u:'Per Shipment',r:'',q:0,rem:'Quote on request'},
+    ]},
+  ],
+  'sea-export-fcl':[
+    {sec:'PICKUP & ORIGIN INLAND',rows:[
+      {d:'Cargo Pickup — Customer Warehouse (Dubai)',u:'Per Container',r:'',q:0,rem:''},
+      {d:'Freezone Exit Pass / Out-Clearance',u:'Per Container',r:'',q:0,rem:'If from FZ'},
+    ]},
+    {sec:'EXPORT CUSTOMS & DOCUMENTATION',rows:[
+      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:'Dubai / FCA'},
+      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'Bill of Lading (B/L) Fee',u:'Per B/L',r:'',q:1,rem:''},
+      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'Dubai Chamber — if required'},
+      {d:'Fumigation Certificate',u:'Per Shipment',r:'',q:0,rem:'For certain destinations'},
+    ]},
+    {sec:'ORIGIN — JEBEL ALI PORT',rows:[
+      {d:'Origin THC / Port Handling',u:'Per Container',r:'',q:1,rem:''},
+      {d:'Seal Fee',u:'Per Container',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'OCEAN FREIGHT',rows:[
+      {d:"Ocean Freight — 20'GP",u:'Per Container',r:'',q:0,rem:''},
+      {d:"Ocean Freight — 40'GP",u:'Per Container',r:'',q:0,rem:''},
+      {d:"Ocean Freight — 40'HC",u:'Per Container',r:'',q:0,rem:''},
+      {d:'BAF / Bunker Surcharge',u:'Per Container',r:'',q:0,rem:'If applicable'},
+      {d:'Port Congestion Surcharge',u:'Per Container',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'DESTINATION CHARGES (INDICATIVE)',rows:[
+      {d:'Destination THC / Port Handling',u:'Per Container',r:'',q:0,rem:'Indicative — at actuals'},
+      {d:'Destination Customs Clearance',u:'Per Entry',r:'',q:0,rem:'If arranged by SASCO'},
+    ]},
+  ],
+  'sea-export-lcl':[
+    {sec:'PICKUP & ORIGIN INLAND',rows:[
+      {d:'Cargo Pickup — Customer Warehouse (up to 10 CBM)',u:'Per Shipment',r:'',q:0,rem:''},
+      {d:'Cargo Pickup — Per CBM (> 10 CBM)',u:'Per CBM',r:'',q:0,rem:''},
+      {d:'Freezone Exit / Out-Clearance',u:'Per Shipment',r:'',q:0,rem:'If from FZ'},
+    ]},
+    {sec:'EXPORT CUSTOMS & DOCUMENTATION',rows:[
+      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'House B/L / Documentation Fee',u:'Per B/L',r:'',q:1,rem:''},
+      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'If required'},
+      {d:'Fumigation Certificate',u:'Per Shipment',r:'',q:0,rem:'For certain destinations'},
+    ]},
+    {sec:'ORIGIN CFS — JEBEL ALI',rows:[
+      {d:'CFS Receiving / Stuffing Charges',u:'Per CBM',r:'',q:0,rem:'Min: 1 CBM'},
+      {d:'Origin THC',u:'Per CBM',r:'',q:0,rem:''},
+    ]},
+    {sec:'OCEAN FREIGHT',rows:[
+      {d:'Ocean Freight',u:'Per CBM / W/M',r:'',q:0,rem:''},
+      {d:'BAF / Bunker Surcharge',u:'Per CBM',r:'',q:0,rem:''},
+      {d:'Port Congestion Surcharge',u:'Per CBM',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'DESTINATION CHARGES (INDICATIVE)',rows:[
+      {d:'Destination THC / CFS (indicative)',u:'Per CBM',r:'',q:0,rem:'At actuals'},
+    ]},
+  ],
+  'air-import':[
+    {sec:'ORIGIN CHARGES',rows:[
+      {d:'Origin Airport Handling / Export THC',u:'Per Shipment',r:'',q:1,rem:''},
+      {d:'Air Waybill (AWB) Fee',u:'Per AWB',r:'',q:1,rem:''},
+      {d:'Origin Documentation Fee',u:'Per Shipment',r:'',q:1,rem:''},
+      {d:'Export Customs (if applicable)',u:'Per AWB',r:'',q:0,rem:'Origin country'},
+      {d:'Cargo Screening / X-Ray (Origin)',u:'Per KG',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'AIR FREIGHT',rows:[
+      {d:'Air Freight — General Cargo',u:'Per KG (Chargeable)',r:'',q:0,rem:'Min charge applies'},
+      {d:'Fuel Surcharge (FSC)',u:'Per KG',r:'',q:0,rem:'Airline tariff'},
+      {d:'Security Surcharge (SSC)',u:'Per KG',r:'',q:0,rem:''},
+      {d:'War Risk / Routing Surcharge',u:'Per KG',r:'',q:0,rem:'Route dependent'},
+    ]},
+    {sec:'DESTINATION — DUBAI AIRPORT (DXB/DWC)',rows:[
+      {d:'Airport Import Handling (DNATA)',u:'Per KG',r:'',q:0,rem:'Ground handler fee'},
+      {d:'Airline Import Handling Fee',u:'Per AWB',r:'',q:1,rem:'Carrier fee'},
+      {d:'Airport Storage (after 48 hrs free)',u:'Per KG/Day',r:'',q:0,rem:'Actuals'},
+      {d:'Customs Scanning / Examination',u:'Per Shipment',r:'',q:0,rem:'If selected'},
+    ]},
+    {sec:'UAE CUSTOMS CLEARANCE',rows:[
+      {d:'Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:'Filed with FCA'},
+      {d:'Import Duty & VAT',u:'Actuals',r:'',q:1,rem:'FCA assessment'},
+      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
+    ]},
+    {sec:'TRANSPORT & DELIVERY',rows:[
+      {d:'Airport to Customer Warehouse — Dubai (≤ 500 KG)',u:'Per Shipment',r:'',q:0,rem:''},
+      {d:'Airport to Customer Warehouse — Per KG (> 500 KG)',u:'Per KG',r:'',q:0,rem:''},
+      {d:'Freezone Delivery (JAFZA / DIC / etc.)',u:'Per Shipment',r:'',q:0,rem:''},
+      {d:'Out-of-Dubai Delivery',u:'Per Shipment',r:'',q:0,rem:'Quote on request'},
+    ]},
+  ],
+  'air-export':[
+    {sec:'PICKUP & COLLECTION',rows:[
+      {d:'Cargo Pickup — Customer Warehouse (≤ 500 KG)',u:'Per Shipment',r:'',q:0,rem:''},
+      {d:'Cargo Pickup — Per KG (> 500 KG)',u:'Per KG',r:'',q:0,rem:''},
+      {d:'Freezone / Port Pickup (JAFZA / DIC)',u:'Per Shipment',r:'',q:0,rem:''},
+    ]},
+    {sec:'EXPORT CUSTOMS & DOCUMENTATION',rows:[
+      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:'Dubai Customs / FCA'},
+      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'Air Waybill (AWB) / Documentation Fee',u:'Per AWB',r:'',q:1,rem:''},
+      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'If required'},
+    ]},
+    {sec:'AIRPORT HANDLING — DUBAI',rows:[
+      {d:'Airport Export Handling (DNATA)',u:'Per KG',r:'',q:0,rem:'Ground handler fee'},
+      {d:'Cargo Screening / X-Ray (GCAA)',u:'Per KG',r:'',q:0,rem:'UAE GCAA requirement'},
+      {d:'Airport Security / THC',u:'Per Shipment',r:'',q:1,rem:''},
+    ]},
+    {sec:'AIR FREIGHT',rows:[
+      {d:'Air Freight — General Cargo',u:'Per KG (Chargeable)',r:'',q:0,rem:'Min charge applies'},
+      {d:'Fuel Surcharge (FSC)',u:'Per KG',r:'',q:0,rem:'Airline tariff'},
+      {d:'Security Surcharge (SSC)',u:'Per KG',r:'',q:0,rem:''},
+      {d:'War Risk / Routing Surcharge',u:'Per KG',r:'',q:0,rem:'Route dependent'},
+      {d:'Peak Season Surcharge (PSS)',u:'Per KG',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'DESTINATION CHARGES (INDICATIVE)',rows:[
+      {d:'Destination Airport Handling (indicative)',u:'Per KG',r:'',q:0,rem:'Foreign agent — actuals'},
+      {d:'Destination Customs Clearance (if DDP)',u:'Per Entry',r:'',q:0,rem:'Quote separately'},
+    ]},
+  ],
+  'land-import':[
+    {sec:'ORIGIN / CROSS-BORDER CHARGES',rows:[
+      {d:'Origin Loading / Handling',u:'Per Shipment',r:'',q:1,rem:''},
+      {d:'Origin Country Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'Border Crossing Fee',u:'Per Truck',r:'',q:0,rem:'e.g., Oman, Saudi, Kuwait'},
+      {d:'Transit Customs / GIT Bond',u:'Per Entry',r:'',q:0,rem:'Inter-country transit'},
+    ]},
+    {sec:'ROAD FREIGHT',rows:[
+      {d:"Road Freight — 40' Trailer (FTL)",u:'Per Trip',r:'',q:0,rem:''},
+      {d:"Road Freight — 20' Flatbed (FTL)",u:'Per Trip',r:'',q:0,rem:''},
+      {d:'Road Freight — LTL Rate',u:'Per CBM',r:'',q:0,rem:''},
+      {d:'Fuel Surcharge',u:'Per Trip',r:'',q:0,rem:'If applicable'},
+      {d:'Driver Allowance / Permit Fee',u:'Per Trip',r:'',q:0,rem:'If applicable'},
+    ]},
+    {sec:'UAE CUSTOMS CLEARANCE',rows:[
+      {d:'UAE Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:'Filed with FCA'},
+      {d:'Import Duty & VAT',u:'Actuals',r:'',q:1,rem:'FCA assessment'},
+      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
+    ]},
+    {sec:'DELIVERY',rows:[
+      {d:'Local Delivery — UAE (final mile)',u:'Per Shipment',r:'',q:0,rem:''},
+      {d:'Offloading / Tailgate',u:'Per Shipment',r:'',q:0,rem:'If required'},
+    ]},
+  ],
+  'land-export':[
+    {sec:'PICKUP & LOADING',rows:[
+      {d:'Cargo Pickup — Customer Warehouse',u:'Per Shipment',r:'',q:0,rem:''},
+      {d:'Loading / Stuffing',u:'Per Shipment',r:'',q:1,rem:''},
+    ]},
+    {sec:'UAE EXPORT CUSTOMS',rows:[
+      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
+      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'If required'},
+    ]},
+    {sec:'ROAD FREIGHT',rows:[
+      {d:"Road Freight — 40' Trailer (FTL)",u:'Per Trip',r:'',q:0,rem:''},
+      {d:"Road Freight — 20' Flatbed",u:'Per Trip',r:'',q:0,rem:''},
+      {d:'Road Freight — LTL Rate',u:'Per CBM',r:'',q:0,rem:''},
+      {d:'Fuel Surcharge',u:'Per Trip',r:'',q:0,rem:''},
+    ]},
+    {sec:'CROSS-BORDER & DESTINATION',rows:[
+      {d:'Border Crossing Fee',u:'Per Truck',r:'',q:0,rem:''},
+      {d:'Destination Customs (indicative)',u:'Per Entry',r:'',q:0,rem:'At actuals'},
+      {d:'Destination Delivery (if arranged)',u:'Per Shipment',r:'',q:0,rem:''},
+    ]},
+  ],
+  'warehouse':[
+    {sec:'INBOUND / RECEIVING',rows:[
+      {d:"Container Unloading (FCL)",u:'Per Container',r:'',q:0,rem:''},
+      {d:'LCL / Loose Cargo Receiving',u:'Per CBM',r:'',q:0,rem:''},
+      {d:'Pallet Check / SKU Count',u:'Per Pallet',r:'',q:0,rem:''},
+      {d:'System Receiving / Inventory Entry',u:'Per SKU',r:'',q:0,rem:''},
+    ]},
+    {sec:'STORAGE',rows:[
+      {d:'Pallet Storage (Monthly)',u:'Per Pallet/Month',r:'',q:0,rem:'Racked or floor'},
+      {d:'Pallet Storage (Weekly)',u:'Per Pallet/Week',r:'',q:0,rem:'Short-term'},
+      {d:'CBM Storage — Loose Cargo',u:'Per CBM/Month',r:'',q:0,rem:''},
+      {d:'Oversized / Out-of-Gauge Storage',u:'Per CBM/Month',r:'',q:0,rem:'Quote on request'},
+    ]},
+    {sec:'OUTBOUND / DISPATCH',rows:[
+      {d:'Order Picking',u:'Per Order Line',r:'',q:0,rem:''},
+      {d:'Packing — Per Carton / Unit',u:'Per Unit',r:'',q:0,rem:'Standard packing'},
+      {d:'Palletizing & Wrapping',u:'Per Pallet',r:'',q:0,rem:''},
+      {d:'Container / Truck Loading',u:'Per Container',r:'',q:0,rem:''},
+      {d:'Dispatch Documentation',u:'Per Shipment',r:'',q:1,rem:''},
+    ]},
+    {sec:'VALUE-ADDED SERVICES',rows:[
+      {d:'Labeling / Stickering',u:'Per Unit',r:'',q:0,rem:''},
+      {d:'Repackaging / Kitting',u:'Per Unit',r:'',q:0,rem:''},
+      {d:'Quality Inspection (QC)',u:'Per Hour',r:'',q:0,rem:''},
+      {d:'Shrink Wrapping',u:'Per Pallet',r:'',q:0,rem:''},
+    ]},
+    {sec:'TRANSPORT',rows:[
+      {d:'Local Delivery — Dubai',u:'Per Trip',r:'',q:0,rem:''},
+      {d:'Local Delivery — Other Emirates',u:'Per Trip',r:'',q:0,rem:''},
+    ]},
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TERMS & CONDITIONS TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+const TC = {
+  common:[
+    'This quotation is valid for the period stated above. Acceptance must be confirmed in writing.',
+    'Rates are subject to change without prior notice based on carrier/airline/authority tariff adjustments.',
+    'All rates are subject to space, equipment, and flight/vessel availability at time of booking.',
+    'Import duty, taxes, and government levies are excluded from this quotation and will be charged at actuals.',
+    'Customs clearance timelines are subject to UAE Federal Customs Authority (FCA) decisions and are outside SASCO Global\'s control.',
+    'SASCO Global acts as a freight forwarder only and is not liable for carrier/airline delays or force majeure events.',
+    'Cargo insurance is not included in this quotation. SASCO Global can arrange cargo insurance upon request.',
+    'SASCO Global\'s standard liability is limited as per FIATA Bill of Lading / House AWB conditions.',
+    'Payment terms: 100% advance or as per signed credit agreement. All bank charges are for the customer\'s account.',
+    'All disputes shall be governed by the laws of the United Arab Emirates and subject to the jurisdiction of Dubai courts.',
+    'Quotation is based on cargo details provided; changes in weight, volume, or commodity may affect pricing.',
+    'Dangerous goods (DG), perishables, and special cargo may attract additional handling surcharges and require prior approval.',
+  ],
+  sea:[
+    'Demurrage, detention, and storage charges beyond the carrier\'s free period are entirely for the customer\'s account.',
+    'Port congestion, peak season, and emergency surcharges (if any) will be charged at actuals as levied by the carrier.',
+    'Free storage at Jebel Ali Port: typically 5 calendar days for FCL and 5 days at CFS for LCL — subject to carrier/port policy.',
+    'LCL chargeable weight is based on W/M (Weight or Measure, whichever is greater). Minimum chargeable: 1 CBM.',
+    'CFS cut-off times must be strictly adhered to. Late cargo may miss the vessel, incurring re-booking costs.',
+    'Re-export of goods from any UAE Free Zone to UAE Mainland will attract applicable import duty and VAT.',
+    'GIT (Goods in Transit) Customs Bond is mandatory for inter-emirate or cross-border transit of sealed containers.',
+    'Freezone imports are duty-free only while goods remain within the freezone boundary.',
+  ],
+  air:[
+    'Chargeable weight is the higher of actual gross weight or volumetric weight (L × W × H in cm ÷ 6,000 per package).',
+    'Free storage at Dubai Airport: typically 48 hours from aircraft arrival — storage charges apply thereafter at actuals.',
+    'Cargo must arrive at the airport Cargo Terminal Operations (CTO) minimum 3 hours prior to flight departure.',
+    'All export air cargo is subject to UAE GCAA (General Civil Aviation Authority) security screening requirements.',
+    'DNATA and other ground handler tariffs are subject to change and will be confirmed at time of booking.',
+    'Temperature-controlled, pharma, and perishable cargo require advance airline approval and attract premium charges.',
+    'Airline fuel and security surcharges are subject to periodic revision without prior notice.',
+  ],
+  land:[
+    'Road freight rates are subject to prevailing fuel prices. A fuel surcharge may apply and will be communicated.',
+    'GIT (Goods in Transit) Customs Bond is mandatory for cross-border shipments within the GCC.',
+    'Border crossing delays, strikes, or government-imposed restrictions are outside SASCO Global\'s control.',
+    'Overnight, Friday, and public holiday crossings may attract a premium surcharge.',
+    'Out-of-gauge (OOG) and overweight cargo requires special permits and attracts additional charges.',
+    'Transit times are estimates only and subject to road conditions and border crossing procedures.',
+    'Driver allowances and border permit fees are charged as per actual government tariff schedules.',
+  ],
+  warehouse:[
+    'Storage charges commence from the first day of cargo receipt into the warehouse.',
+    'Free storage period (if applicable) must be agreed and confirmed in writing prior to cargo arrival.',
+    'Access to stored goods requires a minimum of 24 hours\' prior written notice during normal working hours.',
+    'SASCO Global is not liable for loss or damage to goods arising from inherent vice or inadequate packaging.',
+    'Monthly storage invoices are issued on the 1st of each month; payment is due within 7 calendar days.',
+    'Value-added services (labeling, repackaging, kitting) will be charged as agreed per unit/hour rate.',
+    'Temperature-controlled storage requires prior arrangement and attracts premium handling and storage rates.',
+    'Customer is responsible for ensuring all goods received at the warehouse comply with UAE import regulations.',
+  ],
+};
+
+function loadTerms(){
+  const mode = S.mode === 'warehouse' ? 'warehouse' : S.mode;
+  const commonTerms = TC.common.map(t => ({text:t, enabled:true, type:'common'}));
+  const modeTerms   = (TC[mode]||[]).map(t => ({text:t, enabled:true, type:'mode'}));
+  S.terms = [...commonTerms, ...modeTerms];
+  renderTerms();
+}
+
+function renderTerms(){
+  const badge = document.getElementById('tc-mode-badge');
+  const modeNames = {sea:'Sea',air:'Air',land:'Land',warehouse:'Warehousing'};
+  badge.textContent = modeNames[S.mode] || '';
+
+  const commonList = document.getElementById('tc-common-list');
+  const modeList   = document.getElementById('tc-mode-list');
+  commonList.innerHTML = '';
+  modeList.innerHTML   = '';
+
+  S.terms.forEach((term, idx) => {
+    const div = document.createElement('div');
+    div.className = 'tc-item';
+    div.innerHTML = `
+      <input type="checkbox" ${term.enabled?'checked':''} data-idx="${idx}" onchange="toggleTerm(${idx},this.checked)">
+      <textarea rows="2" data-idx="${idx}" onblur="updateTerm(${idx},this.value)">${escHtml(term.text)}</textarea>
+      <button class="tc-del" title="Remove" onclick="deleteTerm(${idx})">✕</button>`;
+    if(term.type === 'common') commonList.appendChild(div);
+    else modeList.appendChild(div);
+  });
+}
+
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toggleTerm(idx, v){ S.terms[idx].enabled = v; }
+function updateTerm(idx, v){ S.terms[idx].text = v; }
+function deleteTerm(idx){ S.terms.splice(idx,1); renderTerms(); }
+
+document.addEventListener('click', e => {
+  if(e.target.id === 'btn-add-tc'){
+    const inp = document.getElementById('tc-custom-inp');
+    const txt = inp.value.trim();
+    if(!txt) return;
+    S.terms.push({text:txt, enabled:true, type:'mode'});
+    inp.value = '';
+    renderTerms();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// CHIPS
+// ═══════════════════════════════════════════════════════════════
+function initChips(){
+  setupChips('chips-mode', v => {
+    S.mode = v;
+    updateModeUI();
+    loadChargeTemplate();
+    renderCharges();
+    renderCargoFields();
+    loadTerms();
+  });
+  setupChips('chips-dir', v => { S.dir = v; loadChargeTemplate(); renderCharges(); });
+  setupChips('chips-cnt', v => { S.cnt = v; loadChargeTemplate(); renderCharges(); });
+  setupChips('chips-cargo', v => { S.cargo = v; });
+  setupChips('chips-inco', v => {
+    S.inco = v;
+    document.getElementById('inco-desc').textContent = INCO_DESC[v]||'';
+  });
+  document.getElementById('inco-desc').textContent = INCO_DESC['FOB'];
+}
+
+function setupChips(id, cb){
+  document.getElementById(id).querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(id).querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cb(btn.dataset.val);
+    });
+  });
+}
+
+function updateModeUI(){
+  const isWH  = S.mode === 'warehouse';
+  const isAir = S.mode === 'air';
+  document.getElementById('sec-direction').classList.toggle('hidden', isWH);
+  document.getElementById('sec-container').classList.toggle('hidden', isWH || isAir);
+
+  const cntChips = document.querySelectorAll('#chips-cnt .chip');
+  cntChips.forEach(c => {
+    if(c.dataset.val==='fcl') c.textContent = S.mode==='land' ? 'FTL' : 'FCL';
+    if(c.dataset.val==='lcl') c.textContent = S.mode==='land' ? 'LTL' : 'LCL';
+  });
+
+  const polL = document.getElementById('lbl-pol');
+  const podL = document.getElementById('lbl-pod');
+  const delL = document.getElementById('lbl-delivery');
+  if(isAir){ polL.textContent='Airport of Origin'; podL.textContent='Airport of Destination'; delL.textContent='Place of Delivery';}
+  else if(S.mode==='land'){ polL.textContent='Loading Point / Origin'; podL.textContent='Delivery Point / Destination'; delL.textContent='Final Delivery Location';}
+  else if(isWH){ polL.textContent='Warehouse Location'; podL.textContent='(N/A)'; delL.textContent='Delivery Point (if applicable)';}
+  else { polL.textContent='Port of Loading (POL)'; podL.textContent='Port of Discharge (POD)'; delL.textContent='Final Place of Delivery';}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DYNAMIC CARGO FIELDS
+// ═══════════════════════════════════════════════════════════════
+function renderCargoFields(){
+  const el = document.getElementById('cargo-fields');
+  const isFCL = (S.cnt==='fcl' || S.cnt==='ftl');
+  let html = '<div class="fg">';
+  if(S.mode==='sea' && isFCL){
+    html += fld('Container Type','f-cntype','select',["20'GP","40'GP","40'HC","45'HC","20' Reefer","40' Reefer"]);
+    html += fld('Number of Containers','f-numcnt','text',"e.g., 2 × 40'HC");
+    html += fld('Gross Weight (MT)','f-weight','text','');
+    html += fld('Shipping Line','f-carrier','text','e.g., MSC, Maersk, CMA CGM');
+  }
+  if(S.mode==='sea' && !isFCL){
+    html += fld('Volume (CBM)','f-cbm','text','');
+    html += fld('Gross Weight (KG)','f-weight','text','');
+    html += fld('No. of Packages / Pallets','f-pkgs','text','');
+    html += fld('Dimensions (L×W×H cm)','f-dims','text','Per package — for W/M calc');
+  }
+  if(S.mode==='air'){
+    html += fld('Actual Weight (KG)','f-weight','text','');
+    html += fld('Dimensions (L×W×H cm)','f-dims','text','Per package');
+    html += fld('Volumetric Weight (KG)','f-volwt','text','L×W×H (cm) ÷ 6000');
+    html += fld('Chargeable Weight (KG)','f-chargewt','text','Higher of actual or volumetric');
+    html += fld('No. of Pieces / Pallets','f-pkgs','text','');
+    html += fld('Airline / Routing Preference','f-carrier','text','e.g., Emirates SkyCargo');
+  }
+  if(S.mode==='land'){
+    html += fld('Truck Type','f-trucktype','select',["40' Trailer (FTL)","20' Flatbed (FTL)","Curtain Side","Reefer Truck","LTL — loose cargo"]);
+    html += fld('No. of Trucks','f-numcnt','text','');
+    html += fld('Gross Weight (MT)','f-weight','text','');
+    html += fld('Volume (CBM)','f-cbm','text','');
+  }
+  if(S.mode==='warehouse'){
+    html += fld('No. of Pallets','f-pallets','text','');
+    html += fld('Volume (CBM)','f-cbm','text','');
+    html += fld('Storage Duration','f-storedur','text','e.g., 1 month, 2 weeks');
+    html += fld('No. of SKUs','f-skus','text','');
+  }
+  html += fld('Estimated Transit Time','f-transit','text','e.g., 14–21 days');
+  html += fld('Special Requirements','f-special','text','DG, Reefer, OOG, Pharma etc.');
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function fld(lbl, id, type, ph){
+  if(type==='select'){
+    const opts = Array.isArray(ph) ? ph.map(o=>`<option>${o}</option>`).join('') : '';
+    return `<div class="fgrp"><label>${lbl}</label><select id="${id}">${opts}</select></div>`;
+  }
+  return `<div class="fgrp"><label>${lbl}</label><input type="text" id="${id}" placeholder="${ph}"></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHARGE TEMPLATE LOADING
+// ═══════════════════════════════════════════════════════════════
+function loadChargeTemplate(){
+  let key = S.mode==='warehouse' ? 'warehouse' : `${S.mode}-${S.dir}-${S.cnt}`;
+  const tmpl = TEMPLATES[key] || [];
+  S.charges = tmpl.map(sec => ({
+    sec: sec.sec,
+    rows: sec.rows.map(r => ({...r}))
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER CHARGES — uses data attributes, NO inline onchange
+// ═══════════════════════════════════════════════════════════════
+function renderCharges(){
+  const body = document.getElementById('charges-body');
+  let html = '';
+  let num = 1;
+  S.charges.forEach((sec, si) => {
+    html += `<tr class="sec-row" data-sec="${si}">
+      <td colspan="8">▸ &nbsp;${escHtml(sec.sec)}</td>
+      <td style="text-align:right;"><button class="del-btn" data-action="del-sec" data-si="${si}" title="Remove section">✕</button></td>
+    </tr>`;
+    sec.rows.forEach((row, ri) => {
+      const bg = ri%2===0?'':'background:#EBF1F8;';
+      html += `<tr data-si="${si}" data-ri="${ri}" style="${bg}">
+        <td style="text-align:center;color:#6b7280;font-size:12px;">${num++}</td>
+        <td><input type="text" value="${escHtml(row.d)}" data-si="${si}" data-ri="${ri}" data-key="d" class="ci-text" style="min-width:155px;"></td>
+        <td><input type="text" value="${escHtml(row.u)}" data-si="${si}" data-ri="${ri}" data-key="u" class="ci-text"></td>
+        <td><input type="number" value="${row.r||''}" placeholder="0.00" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="r" class="ci-num" style="text-align:right;"></td>
+        <td><input type="number" value="${row.q||''}" placeholder="0" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="q" class="ci-num" style="text-align:right;"></td>
+        <td class="amt" id="amt-${si}-${ri}">${fmtAmt(row.r,row.q)}</td>
+        <td style="text-align:center;font-size:12px;color:#555;">${S.currency}</td>
+        <td><input type="text" value="${escHtml(row.rem||'')}" placeholder="Remarks…" data-si="${si}" data-ri="${ri}" data-key="rem" class="ci-text" style="min-width:90px;"></td>
+        <td><button class="del-btn" data-action="del-row" data-si="${si}" data-ri="${ri}" title="Remove row">✕</button></td>
+      </tr>`;
+    });
+  });
+  body.innerHTML = html;
+  updateTotals();
+}
+
+function fmtAmt(r, q){
+  const v = parseFloat(r||0) * parseFloat(q||0);
+  if(!v) return '<span style="color:#aaa;">—</span>';
+  return v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ── Event delegation on charges body ──
+function initChargesEvents(){
+  const body = document.getElementById('charges-body');
+
+  // INPUT on text/number fields — update state only; for rate/qty also refresh amount cell
+  body.addEventListener('input', e => {
+    const inp = e.target;
+    if(!inp.dataset.key) return;
+    const si = +inp.dataset.si, ri = +inp.dataset.ri, key = inp.dataset.key;
+    S.charges[si].rows[ri][key] = inp.value;
+    if(key === 'r' || key === 'q'){
+      const amtCell = document.getElementById(`amt-${si}-${ri}`);
+      if(amtCell) amtCell.innerHTML = fmtAmt(S.charges[si].rows[ri].r, S.charges[si].rows[ri].q);
+      updateTotals();
+    }
+  });
+
+  // CLICK for delete buttons
+  body.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const si = +btn.dataset.si;
+    if(btn.dataset.action === 'del-row'){
+      const ri = +btn.dataset.ri;
+      S.charges[si].rows.splice(ri, 1);
+      if(S.charges[si].rows.length === 0) S.charges.splice(si, 1);
+    } else if(btn.dataset.action === 'del-sec'){
+      S.charges.splice(si, 1);
+    }
+    renderCharges();
+  });
+
+  // ADD ROW button
+  document.getElementById('btn-add-row').addEventListener('click', () => {
+    if(S.charges.length === 0){
+      S.charges.push({sec:'ADDITIONAL CHARGES', rows:[]});
+    }
+    S.charges[S.charges.length - 1].rows.push({d:'', u:'Per Shipment', r:'', q:1, rem:''});
+    renderCharges();
+    // Scroll to and focus the new description input
+    setTimeout(() => {
+      const allInputs = document.querySelectorAll('#charges-body .ci-text');
+      if(allInputs.length) allInputs[allInputs.length - 4].focus();
+    }, 30);
+  });
+
+  // ADD SECTION button
+  document.getElementById('btn-add-sec').addEventListener('click', () => {
+    const inp = document.getElementById('new-sec-name');
+    const name = (inp.value || 'ADDITIONAL CHARGES').trim().toUpperCase();
+    inp.value = '';
+    S.charges.push({sec: name, rows:[{d:'', u:'Per Shipment', r:'', q:1, rem:''}]});
+    renderCharges();
+    setTimeout(() => {
+      const allInputs = document.querySelectorAll('#charges-body .ci-text');
+      if(allInputs.length) allInputs[allInputs.length - 4].focus();
+    }, 30);
+  });
+}
+
+function updateTotals(){
+  let sub = 0;
+  S.charges.forEach(sec => sec.rows.forEach(r => {
+    sub += parseFloat(r.r||0) * parseFloat(r.q||0);
+  }));
+  const vat = sub * S.vatRate, grand = sub + vat, cur = S.currency;
+  const fmt = v => cur + ' ' + v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('tot-sub').textContent  = fmt(sub);
+  document.getElementById('tot-vat').textContent  = fmt(vat);
+  document.getElementById('tot-grand').textContent = fmt(grand);
+  return {sub, vat, grand};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CURRENCY & VAT
+// ═══════════════════════════════════════════════════════════════
+function initListeners(){
+  document.getElementById('f-currency').addEventListener('change', e => {
+    S.currency = e.target.value; renderCharges();
+  });
+  document.getElementById('f-vat').addEventListener('change', e => {
+    S.vatRate = parseFloat(e.target.value);
+    document.getElementById('vat-pct-lbl').textContent = Math.round(S.vatRate*100) + '%';
+    updateTotals();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════════
+function resetForm(){
+  if(!confirm('Reset all form data? This will clear all entries.')) return;
+  document.querySelectorAll('input[type=text],input[type=date],input[type=email],textarea').forEach(el => el.value='');
+  ['chips-mode','chips-dir','chips-cnt','chips-cargo','chips-inco'].forEach(id => {
+    document.getElementById(id).querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  });
+  document.querySelector('#chips-mode [data-val="sea"]').classList.add('active');
+  document.querySelector('#chips-dir [data-val="import"]').classList.add('active');
+  document.querySelector('#chips-cnt [data-val="fcl"]').classList.add('active');
+  document.querySelector('#chips-cargo [data-val="palletized"]').classList.add('active');
+  document.querySelector('#chips-inco [data-val="FOB"]').classList.add('active');
+  Object.assign(S,{mode:'sea',dir:'import',cnt:'fcl',cargo:'palletized',inco:'FOB',currency:'USD',vatRate:0.05});
+  loadChargeTemplate(); renderCharges(); renderCargoFields(); updateModeUI(); loadTerms();
+  document.getElementById('inco-desc').textContent = INCO_DESC['FOB'];
+  const today = new Date(), valid = new Date(); valid.setDate(today.getDate()+14);
+  document.getElementById('f-date').value  = today.toISOString().slice(0,10);
+  document.getElementById('f-valid').value = valid.toISOString().slice(0,10);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PDF GENERATION
+// ═══════════════════════════════════════════════════════════════
+function gv(id){ return (document.getElementById(id)||{}).value || ''; }
+
+function generatePDF(){
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'p', unit:'mm', format:'a4'});
+  const W=210, ml=12, mr=12, cw=W-ml-mr;
+
+  let sub=0;
+  S.charges.forEach(sec => sec.rows.forEach(r => { sub += parseFloat(r.r||0)*parseFloat(r.q||0); }));
+  const vat=sub*S.vatRate, grand=sub+vat, cur=S.currency;
+  const fmtN = v => cur+' '+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const NAVY=[27,42,74], NAVY2=[46,77,139], ORANGE=[232,99,10], ALT=[235,241,248];
+  const WHITE=[255,255,255], GOLD=[245,197,24], ORA_LT=[253,235,208];
+
+  // ── PAGE HEADER helper ──
+  function pageHeader(){
+    doc.setFillColor(...NAVY);
+    doc.rect(0,0,W,38,'F');
+    doc.setFillColor(...ORANGE);
+    doc.rect(0,0,5,38,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...WHITE);
+    doc.text('SASCO GLOBAL FREIGHT & LOGISTICS LLC',10,12);
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+    doc.text('Your Trusted Freight Forwarding Partner in Dubai, UAE',10,19);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
+    doc.text('www.sascoglobal.com  |  info@sascoglobal.com  |  Dubai, United Arab Emirates',10,26);
+    doc.setFillColor(...ORANGE); doc.rect(0,36,W,2.5,'F');
+  }
+
+  function contHeader(){
+    doc.setFillColor(...NAVY); doc.rect(0,0,W,14,'F');
+    doc.setFillColor(...ORANGE); doc.rect(0,0,5,14,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...WHITE);
+    doc.text('SASCO GLOBAL FREIGHT & LOGISTICS LLC — Quotation (continued)',10,9);
+  }
+
+  function checkPage(y, needed){
+    if(y + needed > 278){ doc.addPage(); contHeader(); return 18; }
+    return y;
+  }
+
+  pageHeader();
+  let y=43;
+
+  // ── TITLE BAR ──
+  const mL={sea:'SEA',air:'AIR',land:'LAND',warehouse:'WAREHOUSING'}[S.mode];
+  const dL=S.mode==='warehouse'?'':S.dir==='import'?' IMPORT':' EXPORT';
+  const cL=S.mode==='sea'?` — ${S.cnt.toUpperCase()}`:S.mode==='land'?` — ${S.cnt.toUpperCase()}`:'';
+  const title=`${mL}${dL}${cL} FREIGHT QUOTATION  |  Incoterms: ${S.inco}  |  Cargo: ${S.cargo.toUpperCase()}`;
+  doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,9,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...WHITE);
+  doc.text(title,ml+3,y+6.2); y+=12;
+
+  // ── QUOT INFO + CLIENT ──
+  const quotDate=gv('f-date')||new Date().toISOString().slice(0,10);
+  const quotNo=gv('f-quotno')||'SG-'+new Date().getFullYear()+'-XXXX';
+  const infoRows=[
+    ['Quotation No.',quotNo], ['Date',quotDate],
+    ['Valid Until',gv('f-valid')], ['Prepared By',gv('f-prepby')||'SASCO Global'],
+    ['Incoterms',S.inco], ['Currency',cur],
+  ];
+  const lW=cw*0.48, rW=cw-lW-2, lX=ml, rX=ml+lW+2;
+  const rH=6;
+
+  doc.setFillColor(...NAVY); doc.rect(lX,y,lW,7,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...WHITE);
+  doc.text('QUOTATION DETAILS',lX+2,y+5);
+  doc.setFillColor(...NAVY); doc.rect(rX,y,rW,7,'F');
+  doc.text('CLIENT / CUSTOMER DETAILS',rX+2,y+5); y+=7;
+
+  infoRows.forEach(([lbl,val],i)=>{
+    doc.setFillColor(...(i%2===0?ALT:WHITE)); doc.rect(lX,y,lW,rH,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(70,70,70);
+    doc.text(lbl,lX+2,y+4.2);
+    doc.setFont('helvetica','normal'); doc.setTextColor(0,0,150);
+    doc.text(String(val||''),lX+42,y+4.2); y+=rH;
+  });
+
+  const cliRows=[
+    ['Company',gv('f-company')],['Contact',gv('f-contact')],
+    ['Email',gv('f-email')],['Phone',gv('f-phone')],
+    ['Address',gv('f-address')],['',''],
+  ];
+  let cy=y-infoRows.length*rH;
+  cliRows.forEach(([lbl,val],i)=>{
+    doc.setFillColor(...(i%2===0?ALT:WHITE)); doc.rect(rX,cy,rW,rH,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(70,70,70);
+    if(lbl) doc.text(lbl,rX+2,cy+4.2);
+    doc.setFont('helvetica','normal'); doc.setTextColor(0,0,150);
+    if(val) doc.text(String(val),rX+28,cy+4.2,{maxWidth:rW-30}); cy+=rH;
+  });
+  y+=4;
+
+  // ── SHIPMENT DETAILS ──
+  doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
+  doc.text('SHIPMENT DETAILS',ml+2,y+5); y+=7;
+
+  const cargoIds=['f-cntype','f-numcnt','f-weight','f-carrier','f-cbm','f-pkgs','f-dims','f-volwt','f-chargewt','f-pallets','f-storedur','f-skus','f-trucktype','f-transit','f-special'];
+  const shipRows=[
+    [S.mode==='air'?'Airport of Origin':S.mode==='land'?'Loading Point':'Port of Loading (POL)',gv('f-pol'),
+     'Final Delivery',gv('f-delivery')],
+    [S.mode==='air'?'Airport of Destination':'Port of Discharge (POD)',gv('f-pod'),
+     'Commodity',gv('f-commodity')],
+    ['Mode / Direction',`${mL}${dL}${cL}`, 'Incoterms',S.inco],
+  ];
+  const extras=[];
+  cargoIds.forEach(id=>{ const el=document.getElementById(id); if(el&&el.value){ const lbl=el.previousElementSibling?.textContent||id; extras.push([lbl,el.value]); }});
+  for(let i=0;i<extras.length;i+=2){
+    const [l1,v1]=extras[i], [l2,v2]=extras[i+1]||['',''];
+    shipRows.push([l1,v1,l2,v2]);
+  }
+  const cW4=cw/4;
+  shipRows.forEach((row,ri)=>{
+    doc.setFillColor(...(ri%2===0?ALT:WHITE)); doc.rect(ml,y,cw,7,'F');
+    for(let ci=0;ci<4;ci++){
+      const tx=ml+ci*cW4+2;
+      if(ci%2===0){ doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(70,70,70); }
+      else { doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(0,0,150); }
+      doc.text(row[ci]||'',tx,y+4.5,{maxWidth:cW4-4});
+    }
+    y+=7;
+  });
+  y+=5;
+
+  // ── CHARGES TABLE ──
+  const tblBody=[];
+  let itemNum=1;
+  S.charges.forEach(sec=>{
+    tblBody.push([{content:'  ▸  '+sec.sec,colSpan:8,styles:{fillColor:ORANGE,textColor:WHITE,fontStyle:'bold',fontSize:8.5,cellPadding:3}}]);
+    sec.rows.forEach(r=>{
+      const amt=parseFloat(r.r||0)*parseFloat(r.q||0);
+      tblBody.push([
+        itemNum++, r.d||'', r.u||'',
+        r.r ? parseFloat(r.r).toLocaleString('en-US',{minimumFractionDigits:2}) : '—',
+        r.q ? parseFloat(r.q).toLocaleString('en-US',{minimumFractionDigits:2}) : '—',
+        amt ? amt.toLocaleString('en-US',{minimumFractionDigits:2}) : '—',
+        cur, r.rem||''
+      ]);
+    });
+  });
+
+  doc.autoTable({
+    startY: y, margin:{left:ml,right:mr},
+    head:[['#','Description of Charges','Unit','Rate','Qty/Wt','Amount','Ccy','Remarks']],
+    body: tblBody,
+    headStyles:{fillColor:NAVY,textColor:WHITE,fontSize:8,fontStyle:'bold',halign:'center',cellPadding:3},
+    bodyStyles:{fontSize:8,cellPadding:2.5},
+    alternateRowStyles:{fillColor:ALT},
+    columnStyles:{
+      0:{halign:'center',cellWidth:8},1:{cellWidth:52},2:{cellWidth:22},
+      3:{halign:'right',cellWidth:18},4:{halign:'right',cellWidth:14},
+      5:{halign:'right',cellWidth:22,fontStyle:'bold'},6:{halign:'center',cellWidth:12},7:{cellWidth:'auto'},
+    },
+  });
+  y = doc.lastAutoTable.finalY + 5;
+
+  // ── TOTALS ──
+  y = checkPage(y, 30);
+  const tW=92, tX=W-mr-tW;
+  [['Subtotal (before VAT)', fmtN(sub), ALT],
+   [`VAT (${Math.round(S.vatRate*100)}%)`, fmtN(vat), ORA_LT],
+   ['GRAND TOTAL (incl. VAT)', fmtN(grand), ORANGE]
+  ].forEach(([lbl,val,bg],i)=>{
+    doc.setFillColor(...bg); doc.rect(tX,y,tW,9,'F');
+    const isG=i===2;
+    doc.setFont('helvetica','bold'); doc.setFontSize(isG?10:9); doc.setTextColor(...(isG?WHITE:[40,40,40]));
+    doc.text(lbl,tX+3,y+6); doc.text(val,tX+tW-3,y+6,{align:'right'}); y+=9;
+  });
+  y+=7;
+
+  // ── NOTES ──
+  const notes=gv('f-notes');
+  if(notes){
+    y=checkPage(y,20);
+    doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
+    doc.text('NOTES / SPECIAL INSTRUCTIONS',ml+2,y+5); y+=9;
+    doc.setFillColor(...ALT); doc.rect(ml,y,cw,12,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(40,40,40);
+    doc.text(notes,ml+3,y+4,{maxWidth:cw-6}); y+=14;
+  }
+  y+=2;
+
+  // ── TERMS & CONDITIONS ──
+  const activeTCs = S.terms.filter(t=>t.enabled);
+  if(activeTCs.length > 0){
+    y=checkPage(y,20);
+    doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
+    doc.text('TERMS & CONDITIONS',ml+2,y+5); y+=9;
+
+    activeTCs.forEach((term,i)=>{
+      const lines = doc.splitTextToSize(`${i+1}.  ${term.text}`, cw-8);
+      const rh = lines.length * 4.5 + 3;
+      y = checkPage(y, rh+2);
+      doc.setFillColor(...(i%2===0?ALT:WHITE)); doc.rect(ml,y,cw,rh,'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(40,40,40);
+      doc.text(lines,ml+3,y+3.5); y+=rh;
+    });
+    y+=6;
+  }
+
+  // ── SIGNATURE ──
+  y=checkPage(y,45);
+  doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
+  doc.text('AUTHORIZATION & ACCEPTANCE',ml+2,y+5); y+=9;
+
+  const sigW=cw/3;
+  const sigHdrs=['Prepared By: SASCO Global','Authorized Signatory: SASCO Global','Customer Acceptance & Signature'];
+  sigHdrs.forEach((h,i)=>{
+    doc.setFillColor(...ALT); doc.rect(ml+i*sigW,y,sigW-2,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(40,40,40);
+    doc.text(h,ml+i*sigW+2,y+4.5);
+  }); y+=7;
+  ['Name:','Designation:','Date:','Stamp / Seal:'].forEach(lbl=>{
+    sigHdrs.forEach((_,i)=>{
+      doc.setFillColor(...WHITE); doc.rect(ml+i*sigW,y,sigW-2,8,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(120,120,120);
+      doc.text(lbl,ml+i*sigW+2,y+5);
+    }); y+=8;
+  });
+
+  // ── FOOTER on all pages ──
+  const pages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFillColor(...NAVY); doc.rect(0,284,W,13,'F');
+    doc.setFillColor(...ORANGE); doc.rect(0,284,5,13,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...WHITE);
+    doc.text('SASCO GLOBAL FREIGHT & LOGISTICS LLC  |  www.sascoglobal.com  |  info@sascoglobal.com  |  Dubai, UAE',W/2,291,{align:'center'});
+    doc.setTextColor(...GOLD); doc.text('CONFIDENTIAL — FOR ADDRESSEE ONLY',ml,291);
+    doc.setTextColor(...WHITE); doc.text(`Page ${i} of ${pages}`,W-mr,291,{align:'right'});
+  }
+
+  const fn=`SASCO_Quotation_${quotNo}_${quotDate}.pdf`;
+  doc.save(fn);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  const today=new Date(), valid=new Date();
+  valid.setDate(today.getDate()+14);
+  document.getElementById('f-date').value  = today.toISOString().slice(0,10);
+  document.getElementById('f-valid').value = valid.toISOString().slice(0,10);
+  document.getElementById('f-quotno').value= `SG-${today.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
+
+  initChips();
+  initListeners();
+  initChargesEvents();
+  updateModeUI();
+  renderCargoFields();
+  loadChargeTemplate();
+  renderCharges();
+  loadTerms();
+});
+</script>
+</body>
+</html>
