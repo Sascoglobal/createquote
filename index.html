@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SASCO Global – Freight Quotation Generator</title>
+<title>Sasco Global Shipping – Quotation Generator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -16,27 +16,29 @@
   --green:#16a34a;--red:#dc2626;
 }
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.hidden{display:none!important;}
 
-/* ── HEADER ── */
+/* HEADER */
 .app-hdr{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.35);}
-.hdr-in{max-width:1160px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-in{max-width:1160px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
 .brand{display:flex;align-items:center;gap:14px;}
-.logo-sq{width:46px;height:46px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;letter-spacing:-2px;flex-shrink:0;}
-.brand-txt h1{color:#fff;font-size:17px;font-weight:700;}
+.logo-sq{width:44px;height:44px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;letter-spacing:-2px;flex-shrink:0;}
+.brand-txt h1{color:#fff;font-size:16px;font-weight:700;}
 .brand-txt p{color:var(--gold);font-size:11px;margin-top:2px;}
-.hdr-badge{background:var(--orange);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;}
+.nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.nav-btn{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.35);padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;}
+.nav-btn.active{background:var(--orange);border-color:var(--orange);}
+.user-chip{color:#cbd5e1;font-size:11.5px;display:flex;align-items:center;gap:8px;}
+.user-chip a{color:var(--gold);cursor:pointer;text-decoration:underline;}
+.mode-banner{background:#fff7ed;color:#9a3412;font-size:12px;text-align:center;padding:6px 12px;border-bottom:1px solid #fed7aa;}
 
-/* ── MAIN ── */
-.main{max-width:1160px;margin:0 auto;padding:24px 20px 90px;}
-
-/* ── CARD ── */
+.main{max-width:1160px;margin:0 auto;padding:24px 20px 100px;}
 .card{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.09);margin-bottom:18px;overflow:hidden;}
 .card-hdr{background:var(--navy);padding:11px 20px;display:flex;align-items:center;gap:10px;}
 .step-num{background:var(--orange);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
 .card-hdr h2{color:#fff;font-size:13px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
 .card-body{padding:20px;}
 
-/* ── CHIPS ── */
 .sel-section{margin-bottom:16px;}
 .sel-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;display:block;}
 .chip-group{display:flex;flex-wrap:wrap;gap:8px;}
@@ -46,109 +48,153 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
 .sel-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
 @media(max-width:800px){.sel-row{grid-template-columns:1fr 1fr;}}
 
-/* ── FORM ── */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.fg.three{grid-template-columns:1fr 1fr 1fr;}
 .fg.four{grid-template-columns:1fr 1fr 1fr 1fr;}
-@media(max-width:640px){.fg,.fg.three,.fg.four{grid-template-columns:1fr;}}
+@media(max-width:640px){.fg,.fg.four{grid-template-columns:1fr;}}
 .fgrp{display:flex;flex-direction:column;gap:4px;}
 .fgrp.full{grid-column:1/-1;}
 .fgrp label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
-.fgrp input,.fgrp select,.fgrp textarea{
-  border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;
-  font-size:13px;color:var(--text);background:#fafafa;font-family:inherit;transition:border-color .15s;
-}
+.fgrp input,.fgrp select,.fgrp textarea{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);background:#fafafa;font-family:inherit;}
 .fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{outline:none;border-color:var(--navy2);background:#fff;}
 .fgrp textarea{resize:vertical;min-height:70px;}
 
-/* ── CHARGES TABLE ── */
 .tbl-wrap{overflow-x:auto;}
 table.ctbl{width:100%;border-collapse:collapse;font-size:12.5px;}
-.ctbl thead th{background:var(--navy);color:#fff;padding:9px 8px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+.ctbl thead th{background:var(--navy);color:#fff;padding:9px 6px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
 .ctbl thead th.r{text-align:right;}
+.ctbl thead th.c{text-align:center;}
 .ctbl .sec-row td{background:var(--orange);color:#fff;font-weight:700;font-size:11px;padding:6px 8px;text-transform:uppercase;letter-spacing:.4px;}
-.ctbl tbody tr:not(.sec-row):nth-child(even) td{background:var(--alt);}
-.ctbl tbody tr:not(.sec-row) td{padding:6px 8px;border-bottom:1px solid #e5e7eb;vertical-align:middle;}
-.ctbl input[type=text],.ctbl input[type=number]{
-  border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:12px;width:100%;background:#fff;font-family:inherit;
-}
+.ctbl tbody tr:not(.sec-row) td{padding:5px 6px;border-bottom:1px solid #e5e7eb;vertical-align:middle;}
+.ctbl tbody tr.r-even:not(.sec-row) td{background:var(--alt);}
+.ctbl tr.off td{opacity:.45;}
+.ctbl input[type=text],.ctbl input[type=number]{border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:12px;width:100%;background:#fff;font-family:inherit;}
 .ctbl input:focus{outline:none;border-color:var(--navy2);}
+.ctbl input.locked{background:#f3f4f6;color:#374151;border-style:dashed;cursor:not-allowed;}
+.ctbl input[type=checkbox]{width:16px;height:16px;accent-color:var(--navy);cursor:pointer;}
 .ctbl .amt{font-weight:700;text-align:right;color:var(--navy);white-space:nowrap;font-size:12px;}
+.ctbl .ctr{text-align:center;}
+.lock{font-size:10px;color:var(--muted);}
 .del-btn{background:none;border:none;color:#ef4444;cursor:pointer;font-size:15px;padding:2px 6px;border-radius:4px;}
 .del-btn:hover{background:#fef2f2;}
+.hint{font-size:12px;color:var(--muted);}
 
-/* ── ADD SECTION CONTROLS ── */
 .add-area{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;}
-.add-btn{background:none;border:2px dashed var(--border);color:var(--navy2);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s;}
+.add-btn{background:none;border:2px dashed var(--border);color:var(--navy2);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;}
 .add-btn:hover{border-color:var(--navy2);background:var(--alt);}
 .sec-name-inp{border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;background:#fafafa;font-family:inherit;width:200px;}
-.sec-name-inp:focus{outline:none;border-color:var(--navy2);}
 .add-sec-confirm{background:var(--navy2);color:#fff;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;}
 
-/* ── TOTALS ── */
 .totals-wrap{display:flex;justify-content:flex-end;margin-top:16px;}
-.totals-box{min-width:310px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
-.tot-row{display:flex;justify-content:space-between;padding:9px 16px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;}
+.totals-box{min-width:360px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.tot-row{display:flex;justify-content:space-between;padding:9px 16px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;gap:10px;}
 .tot-row:last-child{border-bottom:none;}
 .tot-row.sub{background:var(--alt);}
+.tot-row.disc{background:#f0fdf4;}
+.tot-row.disc select,.tot-row.disc input{border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12px;background:#fff;}
+.tot-row.disc input{width:80px;text-align:right;}
 .tot-row.vat{background:var(--orange-lt);}
 .tot-row.grand{background:var(--navy);color:#fff;font-weight:700;font-size:15px;}
-.tot-val{font-weight:700;font-family:'Courier New',monospace;}
+.tot-val{font-weight:700;font-family:'Courier New',monospace;white-space:nowrap;}
 
-/* ── T&C SECTION ── */
-.tc-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);margin-bottom:8px;background:#fafafa;transition:all .15s;}
+.tc-item{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);margin-bottom:6px;background:#fafafa;}
 .tc-item:hover{border-color:var(--navy2);background:#fff;}
 .tc-item input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--navy);flex-shrink:0;cursor:pointer;}
-.tc-item textarea{border:none;background:transparent;font-size:13px;color:var(--text);resize:none;width:100%;font-family:inherit;line-height:1.5;outline:none;min-height:40px;}
+.tc-item textarea{border:none;background:transparent;font-size:13px;color:var(--text);resize:none;width:100%;font-family:inherit;line-height:1.5;outline:none;min-height:38px;}
 .tc-item textarea:focus{background:#fff;}
 .tc-item .tc-del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;padding:2px;flex-shrink:0;opacity:.6;}
 .tc-item .tc-del:hover{opacity:1;}
-.tc-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-right:6px;text-transform:uppercase;}
-.tc-tag.common{background:#dbeafe;color:#1d4ed8;}
-.tc-tag.mode{background:#dcfce7;color:#15803d;}
 .tc-group-hdr{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
 .tc-group-hdr::after{content:'';flex:1;height:1px;background:var(--border);}
 .add-tc-row{display:flex;gap:8px;margin-top:10px;}
 .add-tc-inp{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;background:#fafafa;}
-.add-tc-inp:focus{outline:none;border-color:var(--navy2);}
 .add-tc-btn{background:var(--navy);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
 
-/* ── CURRENCY BAR ── */
 .cur-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
 .cur-bar label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;}
 .cur-bar select{border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;background:#fff;}
 
-/* ── GENERATE BAR ── */
-.gen-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--orange);padding:12px 24px;display:flex;justify-content:center;gap:12px;z-index:50;box-shadow:0 -4px 14px rgba(0,0,0,.12);}
-.gen-btn{background:var(--orange);color:#fff;border:none;padding:13px 36px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;}
-.gen-btn:hover{background:#c85208;transform:translateY(-1px);}
-.reset-btn{background:#fff;color:var(--navy);border:2px solid var(--navy);padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
-.reset-btn:hover{background:var(--alt);}
+.gen-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--orange);padding:10px 24px;display:flex;justify-content:center;align-items:center;gap:10px;z-index:50;box-shadow:0 -4px 14px rgba(0,0,0,.12);flex-wrap:wrap;}
+.gen-btn{background:var(--orange);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;}
+.gen-btn:hover{background:#c85208;}
+.sec-btn{background:#fff;color:var(--navy);border:2px solid var(--navy);padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
+.sec-btn:hover{background:var(--alt);}
+.save-state{font-size:11.5px;color:var(--muted);}
 
-.hidden{display:none!important;}
 .divider{height:1px;background:var(--border);margin:14px 0;}
 .info-txt{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
 .badge-inco{display:inline-block;background:var(--alt);color:var(--navy2);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-left:8px;}
+
+/* GATE */
+.gate{position:fixed;inset:0;background:var(--navy);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.gate-box{background:#fff;border-radius:16px;padding:34px 32px;width:100%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.4);text-align:center;}
+.gate-box .logo-sq{margin:0 auto 14px;}
+.gate-box h2{color:var(--navy);font-size:20px;margin-bottom:6px;}
+.gate-box p{color:var(--muted);font-size:13px;margin-bottom:18px;}
+.gate-box input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:10px;}
+.gate-box button{width:100%;background:var(--orange);color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;}
+.gate-err{color:var(--red);font-size:12.5px;min-height:18px;margin-bottom:6px;}
+
+/* MODAL / TOAST */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:#fff;border-radius:14px;width:100%;max-width:860px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-hdr{background:var(--navy);color:#fff;padding:13px 20px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px;}
+.modal-hdr button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;}
+.modal-body{padding:16px 20px;overflow:auto;flex:1;}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;}
+.mail-meta{font-size:12.5px;margin-bottom:10px;line-height:1.7;}
+.mail-meta b{display:inline-block;width:64px;color:var(--muted);}
+.mail-preview{border:1px solid var(--border);border-radius:8px;padding:16px;background:#fff;}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:1100;max-width:90vw;}
+
+/* DASHBOARD */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px;}
+.stat{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 5px rgba(0,0,0,.09);}
+.stat .n{font-size:26px;font-weight:800;color:var(--navy);}
+.stat .l{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.dtbl th{background:var(--navy);color:#fff;text-align:left;padding:9px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;}
+.dtbl td{padding:8px 10px;border-bottom:1px solid #e5e7eb;}
+.dtbl tr:nth-child(even) td{background:var(--alt);}
+.dtbl a{color:var(--navy2);cursor:pointer;font-weight:600;text-decoration:underline;}
+.dash-tools{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+.dash-tools select,.dash-tools input{border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;background:#fff;}
 </style>
 </head>
 <body>
+
+<!-- ACCESS GATE -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="logo-sq">SG</div>
+    <h2>Sasco Quotation Generator</h2>
+    <p>Enter your company email to continue.<br>Access is limited to @sascoglobal.com addresses.</p>
+    <input type="email" id="gate-email" placeholder="name@sascoglobal.com" autocomplete="email">
+    <div class="gate-err" id="gate-err"></div>
+    <button id="gate-btn">Continue</button>
+  </div>
+</div>
 
 <header class="app-hdr">
   <div class="hdr-in">
     <div class="brand">
       <div class="logo-sq">SG</div>
       <div class="brand-txt">
-        <h1>SASCO GLOBAL FREIGHT &amp; LOGISTICS LLC</h1>
-        <p>Dubai, UAE &nbsp;|&nbsp; www.sascoglobal.com &nbsp;|&nbsp; info@sascoglobal.com</p>
+        <h1 id="hdr-company">SASCO GLOBAL SHIPPING LLC</h1>
+        <p id="hdr-contact">sasco@sascoglobal.com</p>
       </div>
     </div>
-    <div class="hdr-badge">📄 Quotation Generator</div>
+    <div class="nav">
+      <button class="nav-btn active" id="nav-quote">📄 New Quote</button>
+      <button class="nav-btn" id="nav-dash">📊 Dashboard</button>
+      <span class="user-chip"><span id="user-lbl"></span><a id="switch-user">Switch</a></span>
+    </div>
   </div>
 </header>
+<div class="mode-banner hidden" id="mode-banner">Local mode: quotes are stored in this browser only. Connect Supabase (see CONFIG) to share them across the team.</div>
 
-<div class="main">
+<!-- ============== QUOTE VIEW ============== -->
+<div class="main" id="view-quote">
 
-  <!-- ── STEP 1: TYPE ── -->
   <div class="card">
     <div class="card-hdr"><div class="step-num">1</div><h2>Quotation Type &amp; Mode</h2></div>
     <div class="card-body">
@@ -189,6 +235,23 @@ table.ctbl{width:100%;border-collapse:collapse;font-size:12.5px;}
       <div class="divider"></div>
 
       <div class="sel-section">
+        <span class="sel-label">🧊 Type of Cargo</span>
+        <div class="chip-group" id="chips-ctype">
+          <button class="chip active" data-val="General">General</button>
+          <button class="chip" data-val="Refrigerated">❄️ Refrigerated</button>
+          <button class="chip" data-val="OOG">📐 OOG</button>
+          <button class="chip" data-val="Dangerous">⚠️ Dangerous (DG)</button>
+          <button class="chip" data-val="Other">Other</button>
+        </div>
+        <div class="fgrp hidden" id="ctype-other-wrap" style="margin-top:10px;max-width:360px;">
+          <label>Describe the cargo type</label>
+          <input type="text" id="f-ctype-other" placeholder="e.g., Pharma, Live animals, High value">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sel-section">
         <span class="sel-label">📋 Incoterms (Terms of Sale)</span>
         <div class="chip-group" id="chips-inco">
           <button class="chip" data-val="EXW">EXW</button>
@@ -208,12 +271,11 @@ table.ctbl{width:100%;border-collapse:collapse;font-size:12.5px;}
     </div>
   </div>
 
-  <!-- ── STEP 2: SHIPMENT ── -->
   <div class="card">
     <div class="card-hdr"><div class="step-num">2</div><h2>Shipment Details</h2></div>
     <div class="card-body">
       <div class="fg four" style="margin-bottom:16px;">
-        <div class="fgrp"><label>Quotation No.</label><input type="text" id="f-quotno" placeholder="e.g., SG-2026-0001"></div>
+        <div class="fgrp"><label>Quotation No.</label><input type="text" id="f-quotno"></div>
         <div class="fgrp"><label>Date</label><input type="date" id="f-date"></div>
         <div class="fgrp"><label>Valid Until</label><input type="date" id="f-valid"></div>
         <div class="fgrp"><label>Prepared By</label><input type="text" id="f-prepby" placeholder="Name / Department"></div>
@@ -230,7 +292,6 @@ table.ctbl{width:100%;border-collapse:collapse;font-size:12.5px;}
     </div>
   </div>
 
-  <!-- ── STEP 3: CLIENT ── -->
   <div class="card">
     <div class="card-hdr"><div class="step-num">3</div><h2>Client / Customer Details</h2></div>
     <div class="card-body">
@@ -244,75 +305,73 @@ table.ctbl{width:100%;border-collapse:collapse;font-size:12.5px;}
     </div>
   </div>
 
-  <!-- ── STEP 4: CHARGES ── -->
   <div class="card">
     <div class="card-hdr"><div class="step-num">4</div><h2>Charges Breakdown</h2></div>
     <div class="card-body">
       <div class="cur-bar">
-        <label>Base Currency:</label>
+        <label>Currency:</label>
         <select id="f-currency">
           <option value="USD">USD – US Dollar</option>
           <option value="AED">AED – UAE Dirham</option>
           <option value="EUR">EUR – Euro</option>
           <option value="GBP">GBP – British Pound</option>
         </select>
-        <label style="margin-left:16px;">VAT Rate:</label>
+        <label style="margin-left:12px;">VAT Rate:</label>
         <select id="f-vat">
           <option value="0.05">5% (UAE Standard)</option>
           <option value="0">0% (Exempt / Out-of-Scope)</option>
           <option value="0.10">10%</option>
         </select>
-        <span style="margin-left:auto;font-size:12px;color:var(--muted);">💡 Click a row to edit. Rate × Qty = Amount.</span>
+        <span class="hint" style="margin-left:auto;">☑ include a line · VAT ☑ marks it VAT-chargeable · 🔒 = fixed rate</span>
       </div>
-
       <div class="tbl-wrap">
         <table class="ctbl" id="charges-tbl">
           <thead>
             <tr>
-              <th style="width:30px;">#</th>
-              <th style="min-width:200px;">Description of Charges</th>
-              <th style="width:105px;">Unit</th>
-              <th style="width:90px;" class="r">Rate</th>
-              <th style="width:80px;" class="r">Qty / Wt</th>
-              <th style="width:105px;" class="r">Amount</th>
-              <th style="width:65px;">Ccy</th>
-              <th style="min-width:115px;">Remarks</th>
-              <th style="width:34px;"></th>
+              <th class="c" style="width:28px;">#</th>
+              <th class="c" style="width:34px;">Incl.</th>
+              <th style="min-width:210px;">Description of Charges</th>
+              <th style="width:110px;">Unit</th>
+              <th style="width:92px;" class="r">Rate</th>
+              <th style="width:70px;" class="r">Qty / Wt</th>
+              <th style="width:100px;" class="r">Amount</th>
+              <th class="c" style="width:40px;">VAT</th>
+              <th style="min-width:110px;">Remarks</th>
+              <th style="width:30px;"></th>
             </tr>
           </thead>
           <tbody id="charges-body"></tbody>
         </table>
       </div>
-
-      <!-- ADD CONTROLS -->
       <div class="add-area">
         <button class="add-btn" id="btn-add-row">＋ Add Charge Line</button>
-        <span style="font-size:12px;color:var(--muted);">|</span>
+        <span class="hint">|</span>
         <input type="text" class="sec-name-inp" id="new-sec-name" placeholder="New section name…">
         <button class="add-sec-confirm" id="btn-add-sec">＋ Add Section</button>
       </div>
-
       <div class="totals-wrap">
         <div class="totals-box">
-          <div class="tot-row sub"><span>Subtotal (before VAT)</span><span class="tot-val" id="tot-sub">USD 0.00</span></div>
-          <div class="tot-row vat"><span>VAT (<span id="vat-pct-lbl">5%</span>)</span><span class="tot-val" id="tot-vat">USD 0.00</span></div>
-          <div class="tot-row grand"><span>GRAND TOTAL</span><span class="tot-val" id="tot-grand">USD 0.00</span></div>
+          <div class="tot-row sub"><span>Subtotal</span><span class="tot-val" id="tot-sub"></span></div>
+          <div class="tot-row disc">
+            <span>Discount
+              <select id="disc-type"><option value="pct">%</option><option value="amt">Amount</option></select>
+              <input type="number" id="disc-val" min="0" step="0.01" placeholder="0">
+            </span>
+            <span class="tot-val" id="tot-disc"></span>
+          </div>
+          <div class="tot-row sub"><span>Net (before VAT)</span><span class="tot-val" id="tot-net"></span></div>
+          <div class="tot-row vat"><span id="vat-lbl">VAT</span><span class="tot-val" id="tot-vat"></span></div>
+          <div class="tot-row grand"><span>GRAND TOTAL</span><span class="tot-val" id="tot-grand"></span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ── STEP 5: TERMS & CONDITIONS ── -->
   <div class="card">
-    <div class="card-hdr"><div class="step-num">5</div><h2>Terms &amp; Conditions <span id="tc-mode-badge" class="badge-inco"></span></h2></div>
+    <div class="card-hdr"><div class="step-num">5</div><h2>Terms &amp; Conditions <span id="tc-badge" class="badge-inco"></span></h2></div>
     <div class="card-body">
-      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
-        ✅ Checked terms will be printed on the PDF. Uncheck to exclude. Click any term to edit its text.
-      </p>
-      <div id="tc-common-hdr" class="tc-group-hdr">Standard Terms (All Modes)</div>
-      <div id="tc-common-list"></div>
-      <div id="tc-mode-hdr" class="tc-group-hdr">Mode-Specific Terms</div>
-      <div id="tc-mode-list"></div>
+      <p class="hint" style="margin-bottom:10px;">Terms are assembled from your selections (mode, direction, load, cargo nature, cargo type, Incoterm). Untick to exclude, or click a term to edit it.</p>
+      <div id="tc-list"></div>
       <div class="add-tc-row">
         <input type="text" class="add-tc-inp" id="tc-custom-inp" placeholder="Type a custom term and click Add…">
         <button class="add-tc-btn" id="btn-add-tc">＋ Add Custom Term</button>
@@ -320,939 +379,948 @@ table.ctbl{width:100%;border-collapse:collapse;font-size:12.5px;}
     </div>
   </div>
 
-  <!-- ── STEP 6: NOTES ── -->
   <div class="card">
     <div class="card-hdr"><div class="step-num">6</div><h2>Notes &amp; Special Instructions</h2></div>
     <div class="card-body">
       <div class="fg">
         <div class="fgrp full"><label>Quotation Notes / Special Conditions (printed on PDF)</label>
-          <textarea id="f-notes" rows="3" placeholder="e.g., Rates are valid for cargo ready by 15-Mar-2026. Customs duty will be charged at actuals as assessed by FCA…"></textarea>
+          <textarea id="f-notes" rows="3" placeholder="e.g., Rates are valid for cargo ready by 15-Mar-2026…"></textarea>
         </div>
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- GENERATE BAR -->
-<div class="gen-bar">
-  <button class="reset-btn" onclick="resetForm()">🔄 Reset</button>
-  <button class="gen-btn" onclick="generatePDF()">📄 Generate &amp; Download PDF</button>
+<div class="gen-bar" id="gen-bar">
+  <button class="sec-btn" id="btn-reset">🔄 Reset</button>
+  <button class="sec-btn" id="btn-save">💾 Save</button>
+  <button class="sec-btn" id="btn-email">✉️ Email Format</button>
+  <button class="gen-btn" id="btn-pdf">📄 Generate PDF</button>
+  <span class="save-state" id="save-state"></span>
+</div>
+
+<!-- ============== DASHBOARD VIEW ============== -->
+<div class="main hidden" id="view-dash">
+  <div class="stat-row" id="dash-stats"></div>
+  <div class="card">
+    <div class="card-hdr"><h2>Quotes by salesperson</h2></div>
+    <div class="card-body"><div class="tbl-wrap"><table class="dtbl" id="dash-people"></table></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><h2>All quotations</h2></div>
+    <div class="card-body">
+      <div class="dash-tools">
+        <select id="dash-filter"><option value="">All salespeople</option></select>
+        <input type="text" id="dash-search" placeholder="Search quote no. / client…">
+        <button class="sec-btn" id="dash-csv" style="padding:7px 14px;">⬇ Export CSV</button>
+        <button class="sec-btn" id="dash-refresh" style="padding:7px 14px;">↻ Refresh</button>
+      </div>
+      <div class="tbl-wrap"><table class="dtbl" id="dash-quotes"></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="modal hidden" id="email-modal">
+  <div class="modal-box">
+    <div class="modal-hdr"><span>Quotation – email format</span><button id="email-close">✕</button></div>
+    <div class="modal-body">
+      <div class="mail-meta"><b>To</b><span id="em-to"></span><br><b>Subject</b><span id="em-subj"></span></div>
+      <div class="mail-preview" id="em-preview"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="gen-btn" id="em-copy" style="padding:10px 20px;">📋 Copy email</button>
+      <button class="sec-btn" id="em-eml">⬇ Download draft (.eml)</button>
+      <button class="sec-btn" id="em-mailto">Open in mail app (plain text)</button>
+    </div>
+  </div>
 </div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
+// CONFIG  – fill these two lines to turn on the shared database
+// ═══════════════════════════════════════════════════════════════
+const CONFIG = {
+  SUPABASE_URL: '',       // e.g. https://abcdxyz.supabase.co
+  SUPABASE_ANON_KEY: '',  // Project Settings > API > anon public key
+  ALLOWED_DOMAIN: 'sascoglobal.com',
+};
+
+// Template data (generated from Sasco_Quote_Templates.xlsx by xlsx_to_data.py)
+const DATA = {"charges": [{"id": "C001", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Origin Port Handling / THC", "u": "Per Container", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C002", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Bill of Lading (B/L) Fee", "u": "Per B/L", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C003", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Origin Documentation Fee", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C004", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight — 20'GP", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C005", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight — 40'GP", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C006", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight — 40'HC", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C007", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "BAF / Bunker Surcharge", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C008", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Emergency Risk Surcharge (ERS)", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C009", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI PORT", "d": "Destination THC / Port Handling", "u": "Per Container", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C010", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI PORT", "d": "Port Storage (after free days)", "u": "Per Container/Day", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Actuals if applicable"}, {"id": "C011", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI PORT", "d": "Delivery Order (D/O) Fee", "u": "Per B/L", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "Shipping line fee"}, {"id": "C012", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI PORT", "d": "Customs Scanning / Examination", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If selected by Customs"}, {"id": "C013", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "CUSTOMS CLEARANCE", "d": "Import Customs Clearance", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "Filed with FCA"}, {"id": "C014", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "CUSTOMS CLEARANCE", "d": "Customs Duty & VAT", "u": "Actuals", "r": null, "q": 1.0, "rc": "Editable", "on": "Y", "vat": "N", "rem": "As assessed by FCA"}, {"id": "C015", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "CUSTOMS CLEARANCE", "d": "Customs Broker File Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C016", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Container Delivery — 20'GP (Dubai)", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "To customer warehouse"}, {"id": "C017", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Container Delivery — 40'/40'HC (Dubai)", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C018", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Out-of-Dubai Delivery (Other Emirates)", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Quote on request"}, {"id": "C019", "mode": "Sea", "dir": "Import", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Container Offloading / Tailgate", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If required"}, {"id": "C020", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Origin CFS / Stuffing Charges", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Min: 1 CBM"}, {"id": "C021", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Origin B/L / Documentation Fee", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C022", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Origin THC", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C023", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight", "u": "Per CBM / W/M", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Higher of weight or measure"}, {"id": "C024", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "BAF / Bunker Surcharge", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C025", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Origin Inland Surcharge (OIS)", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C026", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI CFS", "d": "Destination CFS / Unstuffing", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "At Jebel Ali CFS"}, {"id": "C027", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI CFS", "d": "Destination THC", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C028", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI CFS", "d": "CFS Storage (after free days)", "u": "Per CBM/Day", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Actuals"}, {"id": "C029", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — JEBEL ALI CFS", "d": "Delivery Order (D/O) Fee", "u": "Per B/L", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C030", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "CUSTOMS CLEARANCE", "d": "Import Customs Clearance", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C031", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "CUSTOMS CLEARANCE", "d": "Customs Duty & VAT", "u": "Actuals", "r": null, "q": 1.0, "rc": "Editable", "on": "Y", "vat": "N", "rem": "FCA assessment"}, {"id": "C032", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "CUSTOMS CLEARANCE", "d": "Customs Broker File Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C033", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Local Delivery — Dubai (up to 10 CBM)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C034", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Local Delivery — Per CBM (> 10 CBM)", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C035", "mode": "Sea", "dir": "Import", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Out-of-Dubai Delivery", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Quote on request"}, {"id": "C036", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & ORIGIN INLAND", "d": "Cargo Pickup — Customer Warehouse (Dubai)", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C037", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & ORIGIN INLAND", "d": "Freezone Exit Pass / Out-Clearance", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If from FZ"}, {"id": "C038", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "UAE Export Customs Declaration", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "Dubai / FCA"}, {"id": "C039", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Export Customs Clearance Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C040", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Bill of Lading (B/L) Fee", "u": "Per B/L", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C041", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Certificate of Origin (CoO)", "u": "Per Certificate", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Dubai Chamber — if required"}, {"id": "C042", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Fumigation Certificate", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "For certain destinations"}, {"id": "C043", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN — JEBEL ALI PORT", "d": "Origin THC / Port Handling", "u": "Per Container", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C044", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN — JEBEL ALI PORT", "d": "Seal Fee", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C045", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight — 20'GP", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C046", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight — 40'GP", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C047", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight — 40'HC", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C048", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "BAF / Bunker Surcharge", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C049", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Port Congestion Surcharge", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C050", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION CHARGES (INDICATIVE)", "d": "Destination THC / Port Handling", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Indicative — at actuals"}, {"id": "C051", "mode": "Sea", "dir": "Export", "load": "FCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION CHARGES (INDICATIVE)", "d": "Destination Customs Clearance", "u": "Per Entry", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If arranged by SASCO"}, {"id": "C052", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & ORIGIN INLAND", "d": "Cargo Pickup — Customer Warehouse (up to 10 CBM)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C053", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & ORIGIN INLAND", "d": "Cargo Pickup — Per CBM (> 10 CBM)", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C054", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & ORIGIN INLAND", "d": "Freezone Exit / Out-Clearance", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If from FZ"}, {"id": "C055", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "UAE Export Customs Declaration", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C056", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Export Customs Clearance Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C057", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "House B/L / Documentation Fee", "u": "Per B/L", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C058", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Certificate of Origin (CoO)", "u": "Per Certificate", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If required"}, {"id": "C059", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Fumigation Certificate", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "For certain destinations"}, {"id": "C060", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CFS — JEBEL ALI", "d": "CFS Receiving / Stuffing Charges", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Min: 1 CBM"}, {"id": "C061", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CFS — JEBEL ALI", "d": "Origin THC", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C062", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Ocean Freight", "u": "Per CBM / W/M", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C063", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "BAF / Bunker Surcharge", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C064", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "OCEAN FREIGHT", "d": "Port Congestion Surcharge", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C065", "mode": "Sea", "dir": "Export", "load": "LCL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION CHARGES (INDICATIVE)", "d": "Destination THC / CFS (indicative)", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "At actuals"}, {"id": "C066", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Origin Airport Handling / Export THC", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C067", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Air Waybill (AWB) Fee", "u": "Per AWB", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C068", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Origin Documentation Fee", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C069", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Export Customs (if applicable)", "u": "Per AWB", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Origin country"}, {"id": "C070", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN CHARGES", "d": "Cargo Screening / X-Ray (Origin)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C071", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "Air Freight — General Cargo", "u": "Per KG (Chargeable)", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Min charge applies"}, {"id": "C072", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "Fuel Surcharge (FSC)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Airline tariff"}, {"id": "C073", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "Security Surcharge (SSC)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C074", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "War Risk / Routing Surcharge", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Route dependent"}, {"id": "C075", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — DUBAI AIRPORT (DXB/DWC)", "d": "Airport Import Handling (DNATA)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Ground handler fee"}, {"id": "C076", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — DUBAI AIRPORT (DXB/DWC)", "d": "Airline Import Handling Fee", "u": "Per AWB", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "Carrier fee"}, {"id": "C077", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — DUBAI AIRPORT (DXB/DWC)", "d": "Airport Storage (after 48 hrs free)", "u": "Per KG/Day", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Actuals"}, {"id": "C078", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION — DUBAI AIRPORT (DXB/DWC)", "d": "Customs Scanning / Examination", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If selected"}, {"id": "C079", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE CUSTOMS CLEARANCE", "d": "Import Customs Clearance", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "Filed with FCA"}, {"id": "C080", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE CUSTOMS CLEARANCE", "d": "Import Duty & VAT", "u": "Actuals", "r": null, "q": 1.0, "rc": "Editable", "on": "Y", "vat": "N", "rem": "FCA assessment"}, {"id": "C081", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE CUSTOMS CLEARANCE", "d": "Customs Broker File Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C082", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Airport to Customer Warehouse — Dubai (≤ 500 KG)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C083", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Airport to Customer Warehouse — Per KG (> 500 KG)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C084", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Freezone Delivery (JAFZA / DIC / etc.)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C085", "mode": "Air", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT & DELIVERY", "d": "Out-of-Dubai Delivery", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Quote on request"}, {"id": "C086", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & COLLECTION", "d": "Cargo Pickup — Customer Warehouse (≤ 500 KG)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C087", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & COLLECTION", "d": "Cargo Pickup — Per KG (> 500 KG)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C088", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & COLLECTION", "d": "Freezone / Port Pickup (JAFZA / DIC)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C089", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "UAE Export Customs Declaration", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "Dubai Customs / FCA"}, {"id": "C090", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Export Customs Clearance Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C091", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Air Waybill (AWB) / Documentation Fee", "u": "Per AWB", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C092", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "EXPORT CUSTOMS & DOCUMENTATION", "d": "Certificate of Origin (CoO)", "u": "Per Certificate", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If required"}, {"id": "C093", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "AIRPORT HANDLING — DUBAI", "d": "Airport Export Handling (DNATA)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Ground handler fee"}, {"id": "C094", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "AIRPORT HANDLING — DUBAI", "d": "Cargo Screening / X-Ray (GCAA)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "UAE GCAA requirement"}, {"id": "C095", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "AIRPORT HANDLING — DUBAI", "d": "Airport Security / THC", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C096", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "Air Freight — General Cargo", "u": "Per KG (Chargeable)", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Min charge applies"}, {"id": "C097", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "Fuel Surcharge (FSC)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Airline tariff"}, {"id": "C098", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "Security Surcharge (SSC)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C099", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "War Risk / Routing Surcharge", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Route dependent"}, {"id": "C100", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "AIR FREIGHT", "d": "Peak Season Surcharge (PSS)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C101", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION CHARGES (INDICATIVE)", "d": "Destination Airport Handling (indicative)", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Foreign agent — actuals"}, {"id": "C102", "mode": "Air", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "DESTINATION CHARGES (INDICATIVE)", "d": "Destination Customs Clearance (if DDP)", "u": "Per Entry", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Quote separately"}, {"id": "C103", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN / CROSS-BORDER CHARGES", "d": "Origin Loading / Handling", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C104", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN / CROSS-BORDER CHARGES", "d": "Origin Country Export Customs Declaration", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C105", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN / CROSS-BORDER CHARGES", "d": "Border Crossing Fee", "u": "Per Truck", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "e.g., Oman, Saudi, Kuwait"}, {"id": "C106", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "ORIGIN / CROSS-BORDER CHARGES", "d": "Transit Customs / GIT Bond", "u": "Per Entry", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Inter-country transit"}, {"id": "C107", "mode": "Land", "dir": "Import", "load": "FTL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Road Freight — 40' Trailer (FTL)", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C108", "mode": "Land", "dir": "Import", "load": "FTL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Road Freight — 20' Flatbed (FTL)", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C109", "mode": "Land", "dir": "Import", "load": "LTL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Road Freight — LTL Rate", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C110", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Fuel Surcharge", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C111", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Driver Allowance / Permit Fee", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If applicable"}, {"id": "C112", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE CUSTOMS CLEARANCE", "d": "UAE Import Customs Clearance", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "Filed with FCA"}, {"id": "C113", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE CUSTOMS CLEARANCE", "d": "Import Duty & VAT", "u": "Actuals", "r": null, "q": 1.0, "rc": "Editable", "on": "Y", "vat": "N", "rem": "FCA assessment"}, {"id": "C114", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE CUSTOMS CLEARANCE", "d": "Customs Broker File Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C115", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "DELIVERY", "d": "Local Delivery — UAE (final mile)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C116", "mode": "Land", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "DELIVERY", "d": "Offloading / Tailgate", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If required"}, {"id": "C117", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & LOADING", "d": "Cargo Pickup — Customer Warehouse", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C118", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "PICKUP & LOADING", "d": "Loading / Stuffing", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C119", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE EXPORT CUSTOMS", "d": "UAE Export Customs Declaration", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C120", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE EXPORT CUSTOMS", "d": "Export Customs Clearance Fee", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C121", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "CUSTOMS", "sec": "UAE EXPORT CUSTOMS", "d": "Certificate of Origin (CoO)", "u": "Per Certificate", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "If required"}, {"id": "C122", "mode": "Land", "dir": "Export", "load": "FTL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Road Freight — 40' Trailer (FTL)", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C123", "mode": "Land", "dir": "Export", "load": "FTL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Road Freight — 20' Flatbed", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C124", "mode": "Land", "dir": "Export", "load": "LTL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Road Freight — LTL Rate", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C125", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "FREIGHT", "sec": "ROAD FREIGHT", "d": "Fuel Surcharge", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C126", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "CROSS-BORDER & DESTINATION", "d": "Border Crossing Fee", "u": "Per Truck", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C127", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "CROSS-BORDER & DESTINATION", "d": "Destination Customs (indicative)", "u": "Per Entry", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "At actuals"}, {"id": "C128", "mode": "Land", "dir": "Export", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DESTINATION", "sec": "CROSS-BORDER & DESTINATION", "d": "Destination Delivery (if arranged)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C129", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "INBOUND / RECEIVING", "d": "Container Unloading (FCL)", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C130", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "INBOUND / RECEIVING", "d": "LCL / Loose Cargo Receiving", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C131", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "INBOUND / RECEIVING", "d": "Pallet Check / SKU Count", "u": "Per Pallet", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C132", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "INBOUND / RECEIVING", "d": "System Receiving / Inventory Entry", "u": "Per SKU", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C133", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "STORAGE", "d": "Pallet Storage (Monthly)", "u": "Per Pallet/Month", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Racked or floor"}, {"id": "C134", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "STORAGE", "d": "Pallet Storage (Weekly)", "u": "Per Pallet/Week", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Short-term"}, {"id": "C135", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "STORAGE", "d": "CBM Storage — Loose Cargo", "u": "Per CBM/Month", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C136", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "STORAGE", "d": "Oversized / Out-of-Gauge Storage", "u": "Per CBM/Month", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Quote on request"}, {"id": "C137", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "OUTBOUND / DISPATCH", "d": "Order Picking", "u": "Per Order Line", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C138", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "OUTBOUND / DISPATCH", "d": "Packing — Per Carton / Unit", "u": "Per Unit", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": "Standard packing"}, {"id": "C139", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "OUTBOUND / DISPATCH", "d": "Palletizing & Wrapping", "u": "Per Pallet", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C140", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "OUTBOUND / DISPATCH", "d": "Container / Truck Loading", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C141", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "OUTBOUND / DISPATCH", "d": "Dispatch Documentation", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C142", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "VALUE-ADDED SERVICES", "d": "Labeling / Stickering", "u": "Per Unit", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C143", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "VALUE-ADDED SERVICES", "d": "Repackaging / Kitting", "u": "Per Unit", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C144", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "VALUE-ADDED SERVICES", "d": "Quality Inspection (QC)", "u": "Per Hour", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C145", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "WAREHOUSE", "sec": "VALUE-ADDED SERVICES", "d": "Shrink Wrapping", "u": "Per Pallet", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C146", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT", "d": "Local Delivery — Dubai", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C147", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "ALL", "cat": "DELIVERY", "sec": "TRANSPORT", "d": "Local Delivery — Other Emirates", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C148", "mode": "Sea", "dir": "ALL", "load": "FCL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "FREIGHT", "sec": "REFRIGERATED CARGO", "d": "Reefer Surcharge", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Carrier tariff"}, {"id": "C149", "mode": "Sea", "dir": "ALL", "load": "FCL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "ORIGIN", "sec": "REFRIGERATED CARGO", "d": "Reefer Plug-in / Monitoring", "u": "Per Container/Day", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Actuals"}, {"id": "C150", "mode": "Sea", "dir": "ALL", "load": "FCL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "ORIGIN", "sec": "REFRIGERATED CARGO", "d": "Pre-Trip Inspection (PTI)", "u": "Per Container", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C151", "mode": "Sea", "dir": "ALL", "load": "FCL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "DELIVERY", "sec": "REFRIGERATED CARGO", "d": "Genset / Reefer Trucking Premium", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "If trucked"}, {"id": "C152", "mode": "Air", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "FREIGHT", "sec": "REFRIGERATED CARGO", "d": "Temperature-Controlled Handling Surcharge", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Airline approval required"}, {"id": "C153", "mode": "Air", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "DESTINATION", "sec": "REFRIGERATED CARGO", "d": "Cool Room Storage", "u": "Per KG/Day", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Actuals"}, {"id": "C154", "mode": "Land", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "FREIGHT", "sec": "REFRIGERATED CARGO", "d": "Reefer Truck Premium", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C155", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Refrigerated", "inco": "ALL", "cat": "WAREHOUSE", "sec": "REFRIGERATED CARGO", "d": "Cold Storage", "u": "Per Pallet/Month", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C156", "mode": "Sea", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "OOG", "inco": "ALL", "cat": "FREIGHT", "sec": "OOG CARGO", "d": "OOG / Special Equipment Surcharge (FR / OT)", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Carrier acceptance required"}, {"id": "C157", "mode": "Sea", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "OOG", "inco": "ALL", "cat": "ORIGIN", "sec": "OOG CARGO", "d": "Lashing, Securing & Survey", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C158", "mode": "Sea", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "OOG", "inco": "ALL", "cat": "DESTINATION", "sec": "OOG CARGO", "d": "Port Permits / Special Handling", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Actuals"}, {"id": "C159", "mode": "Air", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "OOG", "inco": "ALL", "cat": "FREIGHT", "sec": "OOG CARGO", "d": "Outsize Cargo / Charter Handling", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Quote on request"}, {"id": "C160", "mode": "Land", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "OOG", "inco": "ALL", "cat": "FREIGHT", "sec": "OOG CARGO", "d": "Low-Bed Trailer Premium", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C161", "mode": "Land", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "OOG", "inco": "ALL", "cat": "FREIGHT", "sec": "OOG CARGO", "d": "Special Permits & Escort", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Actuals"}, {"id": "C162", "mode": "Sea", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Dangerous", "inco": "ALL", "cat": "FREIGHT", "sec": "DANGEROUS GOODS", "d": "DG Surcharge", "u": "Per Container", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Carrier tariff"}, {"id": "C163", "mode": "Sea", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Dangerous", "inco": "ALL", "cat": "ORIGIN", "sec": "DANGEROUS GOODS", "d": "DG Declaration / IMDG Documentation", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C164", "mode": "Sea", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Dangerous", "inco": "ALL", "cat": "DESTINATION", "sec": "DANGEROUS GOODS", "d": "DG Port Handling / Storage", "u": "Per Container/Day", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Actuals"}, {"id": "C165", "mode": "Air", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Dangerous", "inco": "ALL", "cat": "ORIGIN", "sec": "DANGEROUS GOODS", "d": "DG Acceptance Check / Handling (IATA DGR)", "u": "Per Shipment", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C166", "mode": "Air", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Dangerous", "inco": "ALL", "cat": "FREIGHT", "sec": "DANGEROUS GOODS", "d": "DG Surcharge", "u": "Per KG", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Airline tariff"}, {"id": "C167", "mode": "Land", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Dangerous", "inco": "ALL", "cat": "FREIGHT", "sec": "DANGEROUS GOODS", "d": "DG Vehicle Premium / Permit", "u": "Per Trip", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C168", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Dangerous", "inco": "ALL", "cat": "WAREHOUSE", "sec": "DANGEROUS GOODS", "d": "DG Storage Premium", "u": "Per Pallet/Month", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C169", "mode": "Sea", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Other", "inco": "ALL", "cat": "OTHER", "sec": "SPECIAL CARGO", "d": "Special Cargo Handling (specify)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Describe in remarks"}, {"id": "C170", "mode": "Air", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Other", "inco": "ALL", "cat": "OTHER", "sec": "SPECIAL CARGO", "d": "Special Cargo Handling (specify)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Describe in remarks"}, {"id": "C171", "mode": "Land", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Other", "inco": "ALL", "cat": "OTHER", "sec": "SPECIAL CARGO", "d": "Special Cargo Handling (specify)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Describe in remarks"}, {"id": "C172", "mode": "Warehouse", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "Other", "inco": "ALL", "cat": "WAREHOUSE", "sec": "SPECIAL CARGO", "d": "Special Cargo Handling (specify)", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Describe in remarks"}, {"id": "C173", "mode": "ALL", "dir": "ALL", "load": "ALL", "nature": "Palletized", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "CARGO NATURE HANDLING", "d": "Pallet Handling / Shrink Wrapping", "u": "Per Pallet", "r": null, "q": 0.0, "rc": "Editable", "on": "N", "vat": "Y", "rem": ""}, {"id": "C174", "mode": "ALL", "dir": "ALL", "load": "ALL", "nature": "Loose", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "CARGO NATURE HANDLING", "d": "Loose Cargo Manual Handling", "u": "Per CBM", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Floor-loaded / manual unloading"}, {"id": "C175", "mode": "ALL", "dir": "ALL", "load": "ALL", "nature": "Mixed", "ctype": "ALL", "inco": "ALL", "cat": "ORIGIN", "sec": "CARGO NATURE HANDLING", "d": "Segregation / Sorting / Labelling", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": ""}, {"id": "C176", "mode": "ALL", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "EXW", "cat": "ORIGIN", "sec": "INCOTERM-SPECIFIC", "d": "Origin Pickup from Supplier Premises", "u": "Per Shipment", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "EXW collection"}, {"id": "C177", "mode": "ALL", "dir": "Import", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "EXW", "cat": "CUSTOMS", "sec": "INCOTERM-SPECIFIC", "d": "Origin Export Customs Clearance (buyer account)", "u": "Per Entry", "r": null, "q": 1.0, "rc": "Auto", "on": "Y", "vat": "Y", "rem": "EXW - buyer arranges export clearance"}, {"id": "C178", "mode": "ALL", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "CIF,CIP", "cat": "INSURANCE", "sec": "INCOTERM-SPECIFIC", "d": "Cargo Insurance", "u": "% of CIF Value", "r": null, "q": 0.0, "rc": "Editable", "on": "Y", "vat": "Y", "rem": "Only if Sasco arranges cover"}, {"id": "C179", "mode": "ALL", "dir": "ALL", "load": "ALL", "nature": "ALL", "ctype": "ALL", "inco": "DDP", "cat": "CUSTOMS", "sec": "INCOTERM-SPECIFIC", "d": "Duties & Taxes Paid on Behalf (DDP)", "u": "Actuals", "r": null, "q": 1.0, "rc": "Editable", "on": "Y", "vat": "N", "rem": "Re-charged at actuals"}], "terms": [{"id": "T001", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "This quotation is valid for the period stated above. Acceptance must be confirmed in writing.", "on": true, "untick": true}, {"id": "T002", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "Rates are subject to change without prior notice based on carrier/airline/authority tariff adjustments.", "on": true, "untick": true}, {"id": "T003", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "All rates are subject to space, equipment, and flight/vessel availability at time of booking.", "on": true, "untick": true}, {"id": "T004", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "Import duty, taxes, and government levies are excluded from this quotation and will be charged at actuals.", "on": true, "untick": true}, {"id": "T005", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "Customs clearance timelines are subject to UAE Federal Customs Authority (FCA) decisions and are outside SASCO Global's control.", "on": true, "untick": true}, {"id": "T006", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "SASCO Global acts as a freight forwarder only and is not liable for carrier/airline delays or force majeure events.", "on": true, "untick": true}, {"id": "T007", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "Cargo insurance is not included in this quotation. SASCO Global can arrange cargo insurance upon request.", "on": true, "untick": true}, {"id": "T008", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "SASCO Global's standard liability is limited as per FIATA Bill of Lading / House AWB conditions.", "on": true, "untick": true}, {"id": "T009", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "Payment terms: 100% advance or as per signed credit agreement. All bank charges are for the customer's account.", "on": true, "untick": true}, {"id": "T010", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "All disputes shall be governed by the laws of the United Arab Emirates and subject to the jurisdiction of Dubai courts.", "on": true, "untick": true}, {"id": "T011", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "Quotation is based on cargo details provided; changes in weight, volume, or commodity may affect pricing.", "on": true, "untick": true}, {"id": "T012", "layer": "COMMON", "key": "ALL", "mode": "ALL", "text": "Dangerous goods (DG), perishables, and special cargo may attract additional handling surcharges and require prior approval.", "on": true, "untick": true}, {"id": "T013", "layer": "MODE", "key": "Sea", "mode": "Sea", "text": "Demurrage, detention, and storage charges beyond the carrier's free period are entirely for the customer's account.", "on": true, "untick": true}, {"id": "T014", "layer": "MODE", "key": "Sea", "mode": "Sea", "text": "Port congestion, peak season, and emergency surcharges (if any) will be charged at actuals as levied by the carrier.", "on": true, "untick": true}, {"id": "T015", "layer": "MODE", "key": "Sea", "mode": "Sea", "text": "Free storage at Jebel Ali Port: typically 5 calendar days for FCL and 5 days at CFS for LCL — subject to carrier/port policy.", "on": true, "untick": true}, {"id": "T016", "layer": "LOAD", "key": "LCL", "mode": "Sea", "text": "LCL chargeable weight is based on W/M (Weight or Measure, whichever is greater). Minimum chargeable: 1 CBM.", "on": true, "untick": true}, {"id": "T017", "layer": "LOAD", "key": "LCL", "mode": "Sea", "text": "CFS cut-off times must be strictly adhered to. Late cargo may miss the vessel, incurring re-booking costs.", "on": true, "untick": true}, {"id": "T018", "layer": "MODE", "key": "Sea", "mode": "Sea", "text": "Re-export of goods from any UAE Free Zone to UAE Mainland will attract applicable import duty and VAT.", "on": true, "untick": true}, {"id": "T019", "layer": "MODE", "key": "Sea", "mode": "Sea", "text": "GIT (Goods in Transit) Customs Bond is mandatory for inter-emirate or cross-border transit of sealed containers.", "on": true, "untick": true}, {"id": "T020", "layer": "MODE", "key": "Sea", "mode": "Sea", "text": "Freezone imports are duty-free only while goods remain within the freezone boundary.", "on": true, "untick": true}, {"id": "T021", "layer": "MODE", "key": "Air", "mode": "Air", "text": "Chargeable weight is the higher of actual gross weight or volumetric weight (L × W × H in cm ÷ 6,000 per package).", "on": true, "untick": true}, {"id": "T022", "layer": "MODE", "key": "Air", "mode": "Air", "text": "Free storage at Dubai Airport: typically 48 hours from aircraft arrival — storage charges apply thereafter at actuals.", "on": true, "untick": true}, {"id": "T023", "layer": "MODE", "key": "Air", "mode": "Air", "text": "Cargo must arrive at the airport Cargo Terminal Operations (CTO) minimum 3 hours prior to flight departure.", "on": true, "untick": true}, {"id": "T024", "layer": "MODE", "key": "Air", "mode": "Air", "text": "All export air cargo is subject to UAE GCAA (General Civil Aviation Authority) security screening requirements.", "on": true, "untick": true}, {"id": "T025", "layer": "MODE", "key": "Air", "mode": "Air", "text": "DNATA and other ground handler tariffs are subject to change and will be confirmed at time of booking.", "on": true, "untick": true}, {"id": "T026", "layer": "MODE", "key": "Air", "mode": "Air", "text": "Temperature-controlled, pharma, and perishable cargo require advance airline approval and attract premium charges.", "on": true, "untick": true}, {"id": "T027", "layer": "MODE", "key": "Air", "mode": "Air", "text": "Airline fuel and security surcharges are subject to periodic revision without prior notice.", "on": true, "untick": true}, {"id": "T028", "layer": "MODE", "key": "Land", "mode": "Land", "text": "Road freight rates are subject to prevailing fuel prices. A fuel surcharge may apply and will be communicated.", "on": true, "untick": true}, {"id": "T029", "layer": "MODE", "key": "Land", "mode": "Land", "text": "GIT (Goods in Transit) Customs Bond is mandatory for cross-border shipments within the GCC.", "on": true, "untick": true}, {"id": "T030", "layer": "MODE", "key": "Land", "mode": "Land", "text": "Border crossing delays, strikes, or government-imposed restrictions are outside SASCO Global's control.", "on": true, "untick": true}, {"id": "T031", "layer": "MODE", "key": "Land", "mode": "Land", "text": "Overnight, Friday, and public holiday crossings may attract a premium surcharge.", "on": true, "untick": true}, {"id": "T032", "layer": "MODE", "key": "Land", "mode": "Land", "text": "Out-of-gauge (OOG) and overweight cargo requires special permits and attracts additional charges.", "on": true, "untick": true}, {"id": "T033", "layer": "MODE", "key": "Land", "mode": "Land", "text": "Transit times are estimates only and subject to road conditions and border crossing procedures.", "on": true, "untick": true}, {"id": "T034", "layer": "MODE", "key": "Land", "mode": "Land", "text": "Driver allowances and border permit fees are charged as per actual government tariff schedules.", "on": true, "untick": true}, {"id": "T035", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "Storage charges commence from the first day of cargo receipt into the warehouse.", "on": true, "untick": true}, {"id": "T036", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "Free storage period (if applicable) must be agreed and confirmed in writing prior to cargo arrival.", "on": true, "untick": true}, {"id": "T037", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "Access to stored goods requires a minimum of 24 hours' prior written notice during normal working hours.", "on": true, "untick": true}, {"id": "T038", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "SASCO Global is not liable for loss or damage to goods arising from inherent vice or inadequate packaging.", "on": true, "untick": true}, {"id": "T039", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "Monthly storage invoices are issued on the 1st of each month; payment is due within 7 calendar days.", "on": true, "untick": true}, {"id": "T040", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "Value-added services (labeling, repackaging, kitting) will be charged as agreed per unit/hour rate.", "on": true, "untick": true}, {"id": "T041", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "Temperature-controlled storage requires prior arrangement and attracts premium handling and storage rates.", "on": true, "untick": true}, {"id": "T042", "layer": "MODE", "key": "Warehouse", "mode": "Warehouse", "text": "Customer is responsible for ensuring all goods received at the warehouse comply with UAE import regulations.", "on": true, "untick": true}, {"id": "T043", "layer": "DIRECTION", "key": "Import", "mode": "ALL", "text": "Release of cargo is subject to payment of all outstanding charges and receipt of complete import documents (invoice, packing list, bill of lading / airway bill).", "on": true, "untick": true}, {"id": "T044", "layer": "DIRECTION", "key": "Export", "mode": "ALL", "text": "Export clearance is subject to receipt of complete and accurate commercial documents before the cut-off time.", "on": true, "untick": true}, {"id": "T045", "layer": "LOAD", "key": "FCL", "mode": "Sea", "text": "Customer is responsible for the accuracy of container contents and declared weight (VGM) as required under SOLAS.", "on": true, "untick": true}, {"id": "T046", "layer": "LOAD", "key": "FTL", "mode": "Land", "text": "Rates are based on one full truck. Waiting time and detention beyond the free hours are chargeable.", "on": true, "untick": true}, {"id": "T047", "layer": "LOAD", "key": "LTL", "mode": "Land", "text": "Part-load shipments are charged on volumetric weight and transit times may vary due to consolidation.", "on": true, "untick": true}, {"id": "T048", "layer": "NATURE", "key": "Palletized", "mode": "ALL", "text": "Pallets must comply with ISPM-15 where applicable, and pallet dimensions and weights must be declared accurately.", "on": true, "untick": true}, {"id": "T049", "layer": "NATURE", "key": "Loose", "mode": "ALL", "text": "For loose cargo, the adequacy of packing is the shipper's responsibility. Handling charges are higher than for palletized cargo.", "on": true, "untick": true}, {"id": "T050", "layer": "NATURE", "key": "Mixed", "mode": "ALL", "text": "For mixed cargo, each commodity must be declared separately. Differing HS codes may affect duty and clearance time.", "on": true, "untick": true}, {"id": "T052", "layer": "CARGO TYPE", "key": "Refrigerated", "mode": "ALL", "text": "Required temperature must be stated at booking. Sasco accepts no liability for spoilage arising from the product's condition at loading or from carrier equipment failure.", "on": true, "untick": false}, {"id": "T053", "layer": "CARGO TYPE", "key": "OOG", "mode": "ALL", "text": "Out-of-gauge cargo is subject to carrier and terminal acceptance. Final rates depend on confirmed dimensions, weight and equipment availability.", "on": true, "untick": false}, {"id": "T054", "layer": "CARGO TYPE", "key": "Dangerous", "mode": "ALL", "text": "Dangerous goods are accepted only with a valid MSDS / DG declaration and carrier approval. The shipper is liable for any misdeclaration.", "on": true, "untick": false}, {"id": "T055", "layer": "CARGO TYPE", "key": "Other", "mode": "ALL", "text": "Special cargo is accepted case by case and rates are indicative until confirmed in writing.", "on": true, "untick": true}, {"id": "T056", "layer": "INCOTERM", "key": "EXW", "mode": "ALL", "text": "Incoterm applied: EXW. Ex Works - Buyer collects from seller's premises; all costs & risks from that point are buyer's.", "on": true, "untick": true}, {"id": "T057", "layer": "INCOTERM", "key": "FOB", "mode": "ALL", "text": "Incoterm applied: FOB. Free On Board - Seller covers export customs & loading; buyer covers ocean freight, insurance & all destination costs.", "on": true, "untick": true}, {"id": "T058", "layer": "INCOTERM", "key": "FCA", "mode": "ALL", "text": "Incoterm applied: FCA. Free Carrier - Seller delivers to named carrier or location; risk transfers at that point.", "on": true, "untick": true}, {"id": "T059", "layer": "INCOTERM", "key": "FAS", "mode": "ALL", "text": "Incoterm applied: FAS. Free Alongside Ship - Seller delivers cargo alongside vessel; buyer handles loading, freight & destination.", "on": true, "untick": true}, {"id": "T060", "layer": "INCOTERM", "key": "CFR", "mode": "ALL", "text": "Incoterm applied: CFR. Cost & Freight - Seller pays ocean freight to destination port; buyer covers insurance & destination charges.", "on": true, "untick": true}, {"id": "T061", "layer": "INCOTERM", "key": "CIF", "mode": "ALL", "text": "Incoterm applied: CIF. Cost, Insurance & Freight - Seller pays ocean freight & insurance; buyer handles destination clearance & delivery.", "on": true, "untick": true}, {"id": "T062", "layer": "INCOTERM", "key": "CPT", "mode": "ALL", "text": "Incoterm applied: CPT. Carriage Paid To - Seller pays freight to named destination; risk transfers at first carrier handover.", "on": true, "untick": true}, {"id": "T063", "layer": "INCOTERM", "key": "CIP", "mode": "ALL", "text": "Incoterm applied: CIP. Carriage & Insurance Paid To - Like CPT but seller must provide cargo insurance.", "on": true, "untick": true}, {"id": "T064", "layer": "INCOTERM", "key": "DAP", "mode": "ALL", "text": "Incoterm applied: DAP. Delivered At Place - Seller delivers to named place, ready to unload, duties unpaid; buyer pays import duties.", "on": true, "untick": true}, {"id": "T065", "layer": "INCOTERM", "key": "DPU", "mode": "ALL", "text": "Incoterm applied: DPU. Delivered At Place Unloaded - Seller delivers & unloads at destination; buyer pays import duties.", "on": true, "untick": true}, {"id": "T066", "layer": "INCOTERM", "key": "DDP", "mode": "ALL", "text": "Incoterm applied: DDP. Delivered Duty Paid - Seller bears all costs including import duties, taxes & final delivery.", "on": true, "untick": true}], "matrix": {"EXW": {"Import": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "FOB": {"Import": {"ORIGIN": "N", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "Y", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "FCA": {"Import": {"ORIGIN": "N", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "Y", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "FAS": {"Import": {"ORIGIN": "N", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "Y", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "CFR": {"Import": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "CIF": {"Import": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "Y", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "CPT": {"Import": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "CIP": {"Import": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}, "Export": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "Y", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}}, "DAP": {"Import": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}, "Export": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}}, "DPU": {"Import": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "Y", "DELIVERY": "N"}, "Export": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}}, "DDP": {"Import": {"ORIGIN": "N", "FREIGHT": "N", "INSURANCE": "N", "DESTINATION": "N", "CUSTOMS": "N", "DELIVERY": "N"}, "Export": {"ORIGIN": "Y", "FREIGHT": "Y", "INSURANCE": "N", "DESTINATION": "Y", "CUSTOMS": "Y", "DELIVERY": "Y"}}}, "settings": {"company_name": "Sasco Global Shipping LLC", "company_email": "sasco@sascoglobal.com", "address": "", "phone": "", "website": "", "trn": "", "quote_prefix": "SG", "validity_days": "", "currency": "USD", "vat_rate": 0.05, "payment_terms": "", "bank_print": "", "bank_details": "", "email_subject": "Freight Quotation {quote_no} - {origin} to {destination} ({mode})", "email_greeting": "Dear {contact_name},", "email_open": "Thank you for your enquiry. Please find our quotation below.", "email_close": "We trust the above is in order and look forward to your confirmation.", "email_sig": "{prepared_by}\nSasco Global Shipping LLC\nsasco@sascoglobal.com"}, "team": []};
+const ST = DATA.settings || {};
+
+// ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
 const S = {
-  mode:'sea', dir:'import', cnt:'fcl', cargo:'palletized', inco:'FOB',
-  charges:[], terms:[], currency:'USD', vatRate:0.05,
+  mode:'sea', dir:'import', cnt:'fcl', cargo:'palletized', ctype:'General', inco:'FOB',
+  charges:[], terms:[], currency:ST.currency||'USD', vatRate:(typeof ST.vat_rate==='number'?ST.vat_rate:0.05),
+  disc:{type:'pct', val:''},
+  user:null, persisted:false, createdBy:null,
 };
-
-// ═══════════════════════════════════════════════════════════════
-// INCOTERMS
-// ═══════════════════════════════════════════════════════════════
 const INCO_DESC = {
-  EXW:'Ex Works — Buyer collects from seller\'s premises; all costs & risks from that point are buyer\'s.',
+  EXW:"Ex Works — Buyer collects from seller's premises; all costs & risks from that point are buyer's.",
   FOB:'Free On Board — Seller covers export customs & loading; buyer covers ocean freight, insurance & all destination costs.',
   FCA:'Free Carrier — Seller delivers to named carrier or location; risk transfers at that point.',
   FAS:'Free Alongside Ship — Seller delivers cargo alongside vessel; buyer handles loading, freight & destination.',
   CFR:'Cost & Freight — Seller pays ocean freight to destination port; buyer covers insurance & destination charges.',
   CIF:'Cost, Insurance & Freight — Seller pays ocean freight & insurance; buyer handles destination clearance & delivery.',
   CPT:'Carriage Paid To — Seller pays freight to named destination; risk transfers at first carrier handover.',
-  CIP:'Carriage & Insurance Paid To — Like CPT but seller must provide cargo insurance (ICC A minimum).',
+  CIP:'Carriage & Insurance Paid To — Like CPT but seller must provide cargo insurance.',
   DAP:'Delivered At Place — Seller delivers to named place, ready to unload, duties unpaid; buyer pays import duties.',
   DPU:'Delivered At Place Unloaded — Seller delivers & unloads at destination; buyer pays import duties.',
   DDP:'Delivered Duty Paid — Seller bears all costs including import duties, taxes & final delivery.',
 };
 
 // ═══════════════════════════════════════════════════════════════
-// CHARGE TEMPLATES
+// HELPERS
 // ═══════════════════════════════════════════════════════════════
-const TEMPLATES = {
-  'sea-import-fcl':[
-    {sec:'ORIGIN CHARGES',rows:[
-      {d:'Origin Port Handling / THC',u:'Per Container',r:'',q:1,rem:''},
-      {d:'Bill of Lading (B/L) Fee',u:'Per B/L',r:'',q:1,rem:''},
-      {d:'Origin Documentation Fee',u:'Per Shipment',r:'',q:1,rem:''},
-    ]},
-    {sec:'OCEAN FREIGHT',rows:[
-      {d:"Ocean Freight — 20'GP",u:'Per Container',r:'',q:0,rem:''},
-      {d:"Ocean Freight — 40'GP",u:'Per Container',r:'',q:0,rem:''},
-      {d:"Ocean Freight — 40'HC",u:'Per Container',r:'',q:0,rem:''},
-      {d:'BAF / Bunker Surcharge',u:'Per Container',r:'',q:0,rem:'If applicable'},
-      {d:'Emergency Risk Surcharge (ERS)',u:'Per Container',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'DESTINATION — JEBEL ALI PORT',rows:[
-      {d:'Destination THC / Port Handling',u:'Per Container',r:'',q:1,rem:''},
-      {d:'Port Storage (after free days)',u:'Per Container/Day',r:'',q:0,rem:'Actuals if applicable'},
-      {d:'Delivery Order (D/O) Fee',u:'Per B/L',r:'',q:1,rem:'Shipping line fee'},
-      {d:'Customs Scanning / Examination',u:'Per Container',r:'',q:0,rem:'If selected by Customs'},
-    ]},
-    {sec:'CUSTOMS CLEARANCE',rows:[
-      {d:'Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:'Filed with FCA'},
-      {d:'Customs Duty & VAT',u:'Actuals',r:'',q:1,rem:'As assessed by FCA'},
-      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
-    ]},
-    {sec:'TRANSPORT & DELIVERY',rows:[
-      {d:"Container Delivery — 20'GP (Dubai)",u:'Per Container',r:'',q:0,rem:'To customer warehouse'},
-      {d:"Container Delivery — 40'/40'HC (Dubai)",u:'Per Container',r:'',q:0,rem:''},
-      {d:'Out-of-Dubai Delivery (Other Emirates)',u:'Per Container',r:'',q:0,rem:'Quote on request'},
-      {d:'Container Offloading / Tailgate',u:'Per Container',r:'',q:0,rem:'If required'},
-    ]},
-  ],
-  'sea-import-lcl':[
-    {sec:'ORIGIN CHARGES',rows:[
-      {d:'Origin CFS / Stuffing Charges',u:'Per CBM',r:'',q:0,rem:'Min: 1 CBM'},
-      {d:'Origin B/L / Documentation Fee',u:'Per Shipment',r:'',q:1,rem:''},
-      {d:'Origin THC',u:'Per CBM',r:'',q:0,rem:''},
-    ]},
-    {sec:'OCEAN FREIGHT',rows:[
-      {d:'Ocean Freight',u:'Per CBM / W/M',r:'',q:0,rem:'Higher of weight or measure'},
-      {d:'BAF / Bunker Surcharge',u:'Per CBM',r:'',q:0,rem:'If applicable'},
-      {d:'Origin Inland Surcharge (OIS)',u:'Per CBM',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'DESTINATION — JEBEL ALI CFS',rows:[
-      {d:'Destination CFS / Unstuffing',u:'Per CBM',r:'',q:0,rem:'At Jebel Ali CFS'},
-      {d:'Destination THC',u:'Per CBM',r:'',q:0,rem:''},
-      {d:'CFS Storage (after free days)',u:'Per CBM/Day',r:'',q:0,rem:'Actuals'},
-      {d:'Delivery Order (D/O) Fee',u:'Per B/L',r:'',q:1,rem:''},
-    ]},
-    {sec:'CUSTOMS CLEARANCE',rows:[
-      {d:'Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'Customs Duty & VAT',u:'Actuals',r:'',q:1,rem:'FCA assessment'},
-      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
-    ]},
-    {sec:'TRANSPORT & DELIVERY',rows:[
-      {d:'Local Delivery — Dubai (up to 10 CBM)',u:'Per Shipment',r:'',q:0,rem:''},
-      {d:'Local Delivery — Per CBM (> 10 CBM)',u:'Per CBM',r:'',q:0,rem:''},
-      {d:'Out-of-Dubai Delivery',u:'Per Shipment',r:'',q:0,rem:'Quote on request'},
-    ]},
-  ],
-  'sea-export-fcl':[
-    {sec:'PICKUP & ORIGIN INLAND',rows:[
-      {d:'Cargo Pickup — Customer Warehouse (Dubai)',u:'Per Container',r:'',q:0,rem:''},
-      {d:'Freezone Exit Pass / Out-Clearance',u:'Per Container',r:'',q:0,rem:'If from FZ'},
-    ]},
-    {sec:'EXPORT CUSTOMS & DOCUMENTATION',rows:[
-      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:'Dubai / FCA'},
-      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'Bill of Lading (B/L) Fee',u:'Per B/L',r:'',q:1,rem:''},
-      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'Dubai Chamber — if required'},
-      {d:'Fumigation Certificate',u:'Per Shipment',r:'',q:0,rem:'For certain destinations'},
-    ]},
-    {sec:'ORIGIN — JEBEL ALI PORT',rows:[
-      {d:'Origin THC / Port Handling',u:'Per Container',r:'',q:1,rem:''},
-      {d:'Seal Fee',u:'Per Container',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'OCEAN FREIGHT',rows:[
-      {d:"Ocean Freight — 20'GP",u:'Per Container',r:'',q:0,rem:''},
-      {d:"Ocean Freight — 40'GP",u:'Per Container',r:'',q:0,rem:''},
-      {d:"Ocean Freight — 40'HC",u:'Per Container',r:'',q:0,rem:''},
-      {d:'BAF / Bunker Surcharge',u:'Per Container',r:'',q:0,rem:'If applicable'},
-      {d:'Port Congestion Surcharge',u:'Per Container',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'DESTINATION CHARGES (INDICATIVE)',rows:[
-      {d:'Destination THC / Port Handling',u:'Per Container',r:'',q:0,rem:'Indicative — at actuals'},
-      {d:'Destination Customs Clearance',u:'Per Entry',r:'',q:0,rem:'If arranged by SASCO'},
-    ]},
-  ],
-  'sea-export-lcl':[
-    {sec:'PICKUP & ORIGIN INLAND',rows:[
-      {d:'Cargo Pickup — Customer Warehouse (up to 10 CBM)',u:'Per Shipment',r:'',q:0,rem:''},
-      {d:'Cargo Pickup — Per CBM (> 10 CBM)',u:'Per CBM',r:'',q:0,rem:''},
-      {d:'Freezone Exit / Out-Clearance',u:'Per Shipment',r:'',q:0,rem:'If from FZ'},
-    ]},
-    {sec:'EXPORT CUSTOMS & DOCUMENTATION',rows:[
-      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'House B/L / Documentation Fee',u:'Per B/L',r:'',q:1,rem:''},
-      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'If required'},
-      {d:'Fumigation Certificate',u:'Per Shipment',r:'',q:0,rem:'For certain destinations'},
-    ]},
-    {sec:'ORIGIN CFS — JEBEL ALI',rows:[
-      {d:'CFS Receiving / Stuffing Charges',u:'Per CBM',r:'',q:0,rem:'Min: 1 CBM'},
-      {d:'Origin THC',u:'Per CBM',r:'',q:0,rem:''},
-    ]},
-    {sec:'OCEAN FREIGHT',rows:[
-      {d:'Ocean Freight',u:'Per CBM / W/M',r:'',q:0,rem:''},
-      {d:'BAF / Bunker Surcharge',u:'Per CBM',r:'',q:0,rem:''},
-      {d:'Port Congestion Surcharge',u:'Per CBM',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'DESTINATION CHARGES (INDICATIVE)',rows:[
-      {d:'Destination THC / CFS (indicative)',u:'Per CBM',r:'',q:0,rem:'At actuals'},
-    ]},
-  ],
-  'air-import':[
-    {sec:'ORIGIN CHARGES',rows:[
-      {d:'Origin Airport Handling / Export THC',u:'Per Shipment',r:'',q:1,rem:''},
-      {d:'Air Waybill (AWB) Fee',u:'Per AWB',r:'',q:1,rem:''},
-      {d:'Origin Documentation Fee',u:'Per Shipment',r:'',q:1,rem:''},
-      {d:'Export Customs (if applicable)',u:'Per AWB',r:'',q:0,rem:'Origin country'},
-      {d:'Cargo Screening / X-Ray (Origin)',u:'Per KG',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'AIR FREIGHT',rows:[
-      {d:'Air Freight — General Cargo',u:'Per KG (Chargeable)',r:'',q:0,rem:'Min charge applies'},
-      {d:'Fuel Surcharge (FSC)',u:'Per KG',r:'',q:0,rem:'Airline tariff'},
-      {d:'Security Surcharge (SSC)',u:'Per KG',r:'',q:0,rem:''},
-      {d:'War Risk / Routing Surcharge',u:'Per KG',r:'',q:0,rem:'Route dependent'},
-    ]},
-    {sec:'DESTINATION — DUBAI AIRPORT (DXB/DWC)',rows:[
-      {d:'Airport Import Handling (DNATA)',u:'Per KG',r:'',q:0,rem:'Ground handler fee'},
-      {d:'Airline Import Handling Fee',u:'Per AWB',r:'',q:1,rem:'Carrier fee'},
-      {d:'Airport Storage (after 48 hrs free)',u:'Per KG/Day',r:'',q:0,rem:'Actuals'},
-      {d:'Customs Scanning / Examination',u:'Per Shipment',r:'',q:0,rem:'If selected'},
-    ]},
-    {sec:'UAE CUSTOMS CLEARANCE',rows:[
-      {d:'Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:'Filed with FCA'},
-      {d:'Import Duty & VAT',u:'Actuals',r:'',q:1,rem:'FCA assessment'},
-      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
-    ]},
-    {sec:'TRANSPORT & DELIVERY',rows:[
-      {d:'Airport to Customer Warehouse — Dubai (≤ 500 KG)',u:'Per Shipment',r:'',q:0,rem:''},
-      {d:'Airport to Customer Warehouse — Per KG (> 500 KG)',u:'Per KG',r:'',q:0,rem:''},
-      {d:'Freezone Delivery (JAFZA / DIC / etc.)',u:'Per Shipment',r:'',q:0,rem:''},
-      {d:'Out-of-Dubai Delivery',u:'Per Shipment',r:'',q:0,rem:'Quote on request'},
-    ]},
-  ],
-  'air-export':[
-    {sec:'PICKUP & COLLECTION',rows:[
-      {d:'Cargo Pickup — Customer Warehouse (≤ 500 KG)',u:'Per Shipment',r:'',q:0,rem:''},
-      {d:'Cargo Pickup — Per KG (> 500 KG)',u:'Per KG',r:'',q:0,rem:''},
-      {d:'Freezone / Port Pickup (JAFZA / DIC)',u:'Per Shipment',r:'',q:0,rem:''},
-    ]},
-    {sec:'EXPORT CUSTOMS & DOCUMENTATION',rows:[
-      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:'Dubai Customs / FCA'},
-      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'Air Waybill (AWB) / Documentation Fee',u:'Per AWB',r:'',q:1,rem:''},
-      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'If required'},
-    ]},
-    {sec:'AIRPORT HANDLING — DUBAI',rows:[
-      {d:'Airport Export Handling (DNATA)',u:'Per KG',r:'',q:0,rem:'Ground handler fee'},
-      {d:'Cargo Screening / X-Ray (GCAA)',u:'Per KG',r:'',q:0,rem:'UAE GCAA requirement'},
-      {d:'Airport Security / THC',u:'Per Shipment',r:'',q:1,rem:''},
-    ]},
-    {sec:'AIR FREIGHT',rows:[
-      {d:'Air Freight — General Cargo',u:'Per KG (Chargeable)',r:'',q:0,rem:'Min charge applies'},
-      {d:'Fuel Surcharge (FSC)',u:'Per KG',r:'',q:0,rem:'Airline tariff'},
-      {d:'Security Surcharge (SSC)',u:'Per KG',r:'',q:0,rem:''},
-      {d:'War Risk / Routing Surcharge',u:'Per KG',r:'',q:0,rem:'Route dependent'},
-      {d:'Peak Season Surcharge (PSS)',u:'Per KG',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'DESTINATION CHARGES (INDICATIVE)',rows:[
-      {d:'Destination Airport Handling (indicative)',u:'Per KG',r:'',q:0,rem:'Foreign agent — actuals'},
-      {d:'Destination Customs Clearance (if DDP)',u:'Per Entry',r:'',q:0,rem:'Quote separately'},
-    ]},
-  ],
-  'land-import':[
-    {sec:'ORIGIN / CROSS-BORDER CHARGES',rows:[
-      {d:'Origin Loading / Handling',u:'Per Shipment',r:'',q:1,rem:''},
-      {d:'Origin Country Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'Border Crossing Fee',u:'Per Truck',r:'',q:0,rem:'e.g., Oman, Saudi, Kuwait'},
-      {d:'Transit Customs / GIT Bond',u:'Per Entry',r:'',q:0,rem:'Inter-country transit'},
-    ]},
-    {sec:'ROAD FREIGHT',rows:[
-      {d:"Road Freight — 40' Trailer (FTL)",u:'Per Trip',r:'',q:0,rem:''},
-      {d:"Road Freight — 20' Flatbed (FTL)",u:'Per Trip',r:'',q:0,rem:''},
-      {d:'Road Freight — LTL Rate',u:'Per CBM',r:'',q:0,rem:''},
-      {d:'Fuel Surcharge',u:'Per Trip',r:'',q:0,rem:'If applicable'},
-      {d:'Driver Allowance / Permit Fee',u:'Per Trip',r:'',q:0,rem:'If applicable'},
-    ]},
-    {sec:'UAE CUSTOMS CLEARANCE',rows:[
-      {d:'UAE Import Customs Clearance',u:'Per Entry',r:'',q:1,rem:'Filed with FCA'},
-      {d:'Import Duty & VAT',u:'Actuals',r:'',q:1,rem:'FCA assessment'},
-      {d:'Customs Broker File Fee',u:'Per Entry',r:'',q:1,rem:''},
-    ]},
-    {sec:'DELIVERY',rows:[
-      {d:'Local Delivery — UAE (final mile)',u:'Per Shipment',r:'',q:0,rem:''},
-      {d:'Offloading / Tailgate',u:'Per Shipment',r:'',q:0,rem:'If required'},
-    ]},
-  ],
-  'land-export':[
-    {sec:'PICKUP & LOADING',rows:[
-      {d:'Cargo Pickup — Customer Warehouse',u:'Per Shipment',r:'',q:0,rem:''},
-      {d:'Loading / Stuffing',u:'Per Shipment',r:'',q:1,rem:''},
-    ]},
-    {sec:'UAE EXPORT CUSTOMS',rows:[
-      {d:'UAE Export Customs Declaration',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'Export Customs Clearance Fee',u:'Per Entry',r:'',q:1,rem:''},
-      {d:'Certificate of Origin (CoO)',u:'Per Certificate',r:'',q:0,rem:'If required'},
-    ]},
-    {sec:'ROAD FREIGHT',rows:[
-      {d:"Road Freight — 40' Trailer (FTL)",u:'Per Trip',r:'',q:0,rem:''},
-      {d:"Road Freight — 20' Flatbed",u:'Per Trip',r:'',q:0,rem:''},
-      {d:'Road Freight — LTL Rate',u:'Per CBM',r:'',q:0,rem:''},
-      {d:'Fuel Surcharge',u:'Per Trip',r:'',q:0,rem:''},
-    ]},
-    {sec:'CROSS-BORDER & DESTINATION',rows:[
-      {d:'Border Crossing Fee',u:'Per Truck',r:'',q:0,rem:''},
-      {d:'Destination Customs (indicative)',u:'Per Entry',r:'',q:0,rem:'At actuals'},
-      {d:'Destination Delivery (if arranged)',u:'Per Shipment',r:'',q:0,rem:''},
-    ]},
-  ],
-  'warehouse':[
-    {sec:'INBOUND / RECEIVING',rows:[
-      {d:"Container Unloading (FCL)",u:'Per Container',r:'',q:0,rem:''},
-      {d:'LCL / Loose Cargo Receiving',u:'Per CBM',r:'',q:0,rem:''},
-      {d:'Pallet Check / SKU Count',u:'Per Pallet',r:'',q:0,rem:''},
-      {d:'System Receiving / Inventory Entry',u:'Per SKU',r:'',q:0,rem:''},
-    ]},
-    {sec:'STORAGE',rows:[
-      {d:'Pallet Storage (Monthly)',u:'Per Pallet/Month',r:'',q:0,rem:'Racked or floor'},
-      {d:'Pallet Storage (Weekly)',u:'Per Pallet/Week',r:'',q:0,rem:'Short-term'},
-      {d:'CBM Storage — Loose Cargo',u:'Per CBM/Month',r:'',q:0,rem:''},
-      {d:'Oversized / Out-of-Gauge Storage',u:'Per CBM/Month',r:'',q:0,rem:'Quote on request'},
-    ]},
-    {sec:'OUTBOUND / DISPATCH',rows:[
-      {d:'Order Picking',u:'Per Order Line',r:'',q:0,rem:''},
-      {d:'Packing — Per Carton / Unit',u:'Per Unit',r:'',q:0,rem:'Standard packing'},
-      {d:'Palletizing & Wrapping',u:'Per Pallet',r:'',q:0,rem:''},
-      {d:'Container / Truck Loading',u:'Per Container',r:'',q:0,rem:''},
-      {d:'Dispatch Documentation',u:'Per Shipment',r:'',q:1,rem:''},
-    ]},
-    {sec:'VALUE-ADDED SERVICES',rows:[
-      {d:'Labeling / Stickering',u:'Per Unit',r:'',q:0,rem:''},
-      {d:'Repackaging / Kitting',u:'Per Unit',r:'',q:0,rem:''},
-      {d:'Quality Inspection (QC)',u:'Per Hour',r:'',q:0,rem:''},
-      {d:'Shrink Wrapping',u:'Per Pallet',r:'',q:0,rem:''},
-    ]},
-    {sec:'TRANSPORT',rows:[
-      {d:'Local Delivery — Dubai',u:'Per Trip',r:'',q:0,rem:''},
-      {d:'Local Delivery — Other Emirates',u:'Per Trip',r:'',q:0,rem:''},
-    ]},
-  ],
+const $ = id => document.getElementById(id);
+const gv = id => ($(id)||{}).value || '';
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const cap = s => s ? s.charAt(0).toUpperCase()+s.slice(1) : s;
+const escHtml = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const money = v => v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const todayISO = () => new Date().toISOString().slice(0,10);
+function toast(msg, ms){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms||3200); }
+function loadLabel(){
+  if(S.mode==='sea') return S.cnt==='fcl'?'FCL':'LCL';
+  if(S.mode==='land') return S.cnt==='fcl'?'FTL':'LTL';
+  return 'ALL';
+}
+function modeLabel(){ return {sea:'Sea',air:'Air',land:'Land',warehouse:'Warehousing'}[S.mode]; }
+function routeLabel(){
+  const d = S.mode==='warehouse' ? '' : (S.dir==='import'?'Import':'Export');
+  const l = (S.mode==='sea'||S.mode==='land') ? loadLabel() : '';
+  return [modeLabel(), d, l].filter(Boolean).join(' ');
+}
+function ctypeLabel(){ return S.ctype==='Other' && gv('f-ctype-other') ? 'Other – '+gv('f-ctype-other') : S.ctype; }
+function fullName(email){
+  const t = (DATA.team||[]).find(x => x.email === email);
+  if(t && t.name) return t.name;
+  return email.split('@')[0].split(/[._-]+/).map(cap).join(' ');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACCESS GATE (typed-email check; not a security control)
+// ═══════════════════════════════════════════════════════════════
+function validEmail(e){
+  const re = new RegExp('^[^\\s@]+@'+CONFIG.ALLOWED_DOMAIN.replace(/\./g,'\\.')+'$','i');
+  return re.test((e||'').trim());
+}
+function enterApp(email){
+  S.user = email.trim().toLowerCase();
+  try{ localStorage.setItem('sasco_user', S.user); }catch(e){}
+  $('gate').classList.add('hidden');
+  $('user-lbl').textContent = S.user;
+  if(!gv('f-prepby')) $('f-prepby').value = fullName(S.user);
+  $('mode-banner').classList.toggle('hidden', DB.cloud());
+  refreshQuoteNo();
+}
+function initGate(){
+  let saved = null;
+  try{ saved = localStorage.getItem('sasco_user'); }catch(e){}
+  if(saved && validEmail(saved)){ enterApp(saved); }
+  const go = () => {
+    const v = gv('gate-email');
+    if(!validEmail(v)){ $('gate-err').textContent = 'Please use your @'+CONFIG.ALLOWED_DOMAIN+' email address.'; return; }
+    $('gate-err').textContent = '';
+    enterApp(v);
+  };
+  $('gate-btn').addEventListener('click', go);
+  $('gate-email').addEventListener('keydown', e => { if(e.key==='Enter') go(); });
+  $('switch-user').addEventListener('click', () => {
+    try{ localStorage.removeItem('sasco_user'); }catch(e){}
+    $('gate-email').value=''; $('gate').classList.remove('hidden');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BACKEND (Supabase REST if configured, otherwise this browser)
+// ═══════════════════════════════════════════════════════════════
+const LS_KEY = 'sasco_quotes_v1';
+const DB = {
+  cloud(){ return !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY); },
+  hdr(extra){ return Object.assign({apikey:CONFIG.SUPABASE_ANON_KEY, Authorization:'Bearer '+CONFIG.SUPABASE_ANON_KEY, 'Content-Type':'application/json'}, extra||{}); },
+  localAll(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; } },
+  localSet(a){ try{ localStorage.setItem(LS_KEY, JSON.stringify(a)); }catch(e){} },
+  async count(){
+    if(!this.cloud()) return this.localAll().length;
+    const r = await fetch(CONFIG.SUPABASE_URL+'/rest/v1/quotes?select=id&limit=1', {headers:this.hdr({Prefer:'count=exact'})});
+    const cr = r.headers.get('content-range') || '';
+    return parseInt(cr.split('/')[1]) || 0;
+  },
+  async list(){
+    if(!this.cloud()) return this.localAll().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+    const r = await fetch(CONFIG.SUPABASE_URL+'/rest/v1/quotes?select=*&order=created_at.desc&limit=2000', {headers:this.hdr()});
+    if(!r.ok) throw new Error('Database read failed ('+r.status+')');
+    return r.json();
+  },
+  async insert(rec){
+    if(!this.cloud()){
+      const all = this.localAll();
+      if(all.some(x => x.quote_no === rec.quote_no)) return {conflict:true};
+      all.push(Object.assign({created_at:new Date().toISOString()}, rec)); this.localSet(all); return {ok:true};
+    }
+    const r = await fetch(CONFIG.SUPABASE_URL+'/rest/v1/quotes', {method:'POST', headers:this.hdr({Prefer:'return=minimal'}), body:JSON.stringify(rec)});
+    if(r.status===409) return {conflict:true};
+    if(!r.ok) throw new Error('Database write failed ('+r.status+')');
+    return {ok:true};
+  },
+  async update(rec){
+    const body = Object.assign({}, rec); delete body.created_by_email; delete body.quote_no;
+    body.updated_at = new Date().toISOString();
+    if(!this.cloud()){
+      const all = this.localAll(); const i = all.findIndex(x => x.quote_no === rec.quote_no);
+      if(i<0) return {conflict:true};
+      all[i] = Object.assign({}, all[i], body); this.localSet(all); return {ok:true};
+    }
+    const r = await fetch(CONFIG.SUPABASE_URL+'/rest/v1/quotes?quote_no=eq.'+encodeURIComponent(rec.quote_no), {method:'PATCH', headers:this.hdr({Prefer:'return=minimal'}), body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('Database update failed ('+r.status+')');
+    return {ok:true};
+  },
 };
 
-// ═══════════════════════════════════════════════════════════════
-// TERMS & CONDITIONS TEMPLATES
-// ═══════════════════════════════════════════════════════════════
-const TC = {
-  common:[
-    'This quotation is valid for the period stated above. Acceptance must be confirmed in writing.',
-    'Rates are subject to change without prior notice based on carrier/airline/authority tariff adjustments.',
-    'All rates are subject to space, equipment, and flight/vessel availability at time of booking.',
-    'Import duty, taxes, and government levies are excluded from this quotation and will be charged at actuals.',
-    'Customs clearance timelines are subject to UAE Federal Customs Authority (FCA) decisions and are outside SASCO Global\'s control.',
-    'SASCO Global acts as a freight forwarder only and is not liable for carrier/airline delays or force majeure events.',
-    'Cargo insurance is not included in this quotation. SASCO Global can arrange cargo insurance upon request.',
-    'SASCO Global\'s standard liability is limited as per FIATA Bill of Lading / House AWB conditions.',
-    'Payment terms: 100% advance or as per signed credit agreement. All bank charges are for the customer\'s account.',
-    'All disputes shall be governed by the laws of the United Arab Emirates and subject to the jurisdiction of Dubai courts.',
-    'Quotation is based on cargo details provided; changes in weight, volume, or commodity may affect pricing.',
-    'Dangerous goods (DG), perishables, and special cargo may attract additional handling surcharges and require prior approval.',
-  ],
-  sea:[
-    'Demurrage, detention, and storage charges beyond the carrier\'s free period are entirely for the customer\'s account.',
-    'Port congestion, peak season, and emergency surcharges (if any) will be charged at actuals as levied by the carrier.',
-    'Free storage at Jebel Ali Port: typically 5 calendar days for FCL and 5 days at CFS for LCL — subject to carrier/port policy.',
-    'LCL chargeable weight is based on W/M (Weight or Measure, whichever is greater). Minimum chargeable: 1 CBM.',
-    'CFS cut-off times must be strictly adhered to. Late cargo may miss the vessel, incurring re-booking costs.',
-    'Re-export of goods from any UAE Free Zone to UAE Mainland will attract applicable import duty and VAT.',
-    'GIT (Goods in Transit) Customs Bond is mandatory for inter-emirate or cross-border transit of sealed containers.',
-    'Freezone imports are duty-free only while goods remain within the freezone boundary.',
-  ],
-  air:[
-    'Chargeable weight is the higher of actual gross weight or volumetric weight (L × W × H in cm ÷ 6,000 per package).',
-    'Free storage at Dubai Airport: typically 48 hours from aircraft arrival — storage charges apply thereafter at actuals.',
-    'Cargo must arrive at the airport Cargo Terminal Operations (CTO) minimum 3 hours prior to flight departure.',
-    'All export air cargo is subject to UAE GCAA (General Civil Aviation Authority) security screening requirements.',
-    'DNATA and other ground handler tariffs are subject to change and will be confirmed at time of booking.',
-    'Temperature-controlled, pharma, and perishable cargo require advance airline approval and attract premium charges.',
-    'Airline fuel and security surcharges are subject to periodic revision without prior notice.',
-  ],
-  land:[
-    'Road freight rates are subject to prevailing fuel prices. A fuel surcharge may apply and will be communicated.',
-    'GIT (Goods in Transit) Customs Bond is mandatory for cross-border shipments within the GCC.',
-    'Border crossing delays, strikes, or government-imposed restrictions are outside SASCO Global\'s control.',
-    'Overnight, Friday, and public holiday crossings may attract a premium surcharge.',
-    'Out-of-gauge (OOG) and overweight cargo requires special permits and attracts additional charges.',
-    'Transit times are estimates only and subject to road conditions and border crossing procedures.',
-    'Driver allowances and border permit fees are charged as per actual government tariff schedules.',
-  ],
-  warehouse:[
-    'Storage charges commence from the first day of cargo receipt into the warehouse.',
-    'Free storage period (if applicable) must be agreed and confirmed in writing prior to cargo arrival.',
-    'Access to stored goods requires a minimum of 24 hours\' prior written notice during normal working hours.',
-    'SASCO Global is not liable for loss or damage to goods arising from inherent vice or inadequate packaging.',
-    'Monthly storage invoices are issued on the 1st of each month; payment is due within 7 calendar days.',
-    'Value-added services (labeling, repackaging, kitting) will be charged as agreed per unit/hour rate.',
-    'Temperature-controlled storage requires prior arrangement and attracts premium handling and storage rates.',
-    'Customer is responsible for ensuring all goods received at the warehouse comply with UAE import regulations.',
-  ],
-};
+function quotePrefix(){ return (ST.quote_prefix||'SG') + '-' + new Date().getFullYear() + '-'; }
+async function refreshQuoteNo(){
+  try{
+    const n = await DB.count();
+    $('f-quotno').value = quotePrefix() + String(n+1).padStart(4,'0');
+    S.persisted = false; S.createdBy = null;
+  }catch(e){ $('f-quotno').value = quotePrefix() + String(Math.floor(Math.random()*9000)+1000); }
+  setSaveState('');
+}
+function setSaveState(t){ $('save-state').textContent = t; }
 
-function loadTerms(){
-  const mode = S.mode === 'warehouse' ? 'warehouse' : S.mode;
-  const commonTerms = TC.common.map(t => ({text:t, enabled:true, type:'common'}));
-  const modeTerms   = (TC[mode]||[]).map(t => ({text:t, enabled:true, type:'mode'}));
-  S.terms = [...commonTerms, ...modeTerms];
-  renderTerms();
+function serialize(){
+  const fields = {};
+  document.querySelectorAll('#view-quote input[id^="f-"], #view-quote select[id^="f-"], #view-quote textarea[id^="f-"]').forEach(el => { fields[el.id] = el.value; });
+  return {
+    state:{mode:S.mode,dir:S.dir,cnt:S.cnt,cargo:S.cargo,ctype:S.ctype,inco:S.inco,currency:S.currency,vatRate:S.vatRate,disc:S.disc},
+    charges:S.charges, terms:S.terms, fields,
+  };
+}
+function buildRecord(){
+  const c = calc();
+  return {
+    quote_no: gv('f-quotno'),
+    created_by_email: S.createdBy || S.user,
+    created_by_name: gv('f-prepby') || fullName(S.user),
+    mode: S.mode, direction: S.mode==='warehouse'?'':S.dir, load_type: loadLabel(),
+    cargo_nature: S.cargo, cargo_type: ctypeLabel(), incoterm: S.inco,
+    client_company: gv('f-company'), client_contact: gv('f-contact'), client_email: gv('f-email'),
+    currency: S.currency, subtotal: +c.sub.toFixed(2), discount: +c.disc.toFixed(2), vat: +c.vat.toFixed(2), total: +c.grand.toFixed(2),
+    payload: serialize(),
+  };
+}
+async function saveQuote(quiet){
+  if(!S.user){ $('gate').classList.remove('hidden'); return false; }
+  try{
+    let rec = buildRecord();
+    if(S.persisted){
+      await DB.update(rec);
+    }else{
+      let tries = 0, res;
+      while(true){
+        res = await DB.insert(rec);
+        if(!res.conflict || tries++ > 6) break;
+        const m = rec.quote_no.match(/^(.*-)(\d+)$/);
+        rec.quote_no = m ? m[1] + String(parseInt(m[2])+1).padStart(m[2].length,'0') : rec.quote_no + '-2';
+        $('f-quotno').value = rec.quote_no;
+      }
+      if(res.conflict) throw new Error('Could not allocate a unique quote number');
+      S.persisted = true; S.createdBy = rec.created_by_email;
+    }
+    setSaveState('Saved '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+(DB.cloud()?' (database)':' (this browser)'));
+    if(!quiet) toast('Quotation '+gv('f-quotno')+' saved');
+    return true;
+  }catch(e){ toast('Save failed: '+e.message, 5000); return false; }
 }
 
-function renderTerms(){
-  const badge = document.getElementById('tc-mode-badge');
-  const modeNames = {sea:'Sea',air:'Air',land:'Land',warehouse:'Warehousing'};
-  badge.textContent = modeNames[S.mode] || '';
-
-  const commonList = document.getElementById('tc-common-list');
-  const modeList   = document.getElementById('tc-mode-list');
-  commonList.innerHTML = '';
-  modeList.innerHTML   = '';
-
-  S.terms.forEach((term, idx) => {
-    const div = document.createElement('div');
-    div.className = 'tc-item';
-    div.innerHTML = `
-      <input type="checkbox" ${term.enabled?'checked':''} data-idx="${idx}" onchange="toggleTerm(${idx},this.checked)">
-      <textarea rows="2" data-idx="${idx}" onblur="updateTerm(${idx},this.value)">${escHtml(term.text)}</textarea>
-      <button class="tc-del" title="Remove" onclick="deleteTerm(${idx})">✕</button>`;
-    if(term.type === 'common') commonList.appendChild(div);
-    else modeList.appendChild(div);
+// ═══════════════════════════════════════════════════════════════
+// CHARGES (layered from DATA)
+// ═══════════════════════════════════════════════════════════════
+function buildCharges(){
+  const prev = {};
+  S.charges.forEach(s => s.rows.forEach(r => { if(r.id) prev[r.id] = r; }));
+  const custom = S.charges.map(s => ({sec:s.sec, rows:s.rows.filter(r => !r.id)})).filter(s => s.rows.length);
+  const m = cap(S.mode), d = S.mode==='warehouse' ? 'ALL' : cap(S.dir), ld = loadLabel(), nat = cap(S.cargo);
+  const secs = [], idx = {};
+  DATA.charges.forEach(c => {
+    if(!(c.mode==='ALL' || c.mode===m)) return;
+    if(!(c.dir==='ALL' || c.dir===d)) return;
+    if(!(c.load==='ALL' || c.load===ld)) return;
+    if(!(c.nature==='ALL' || c.nature===nat)) return;
+    if(!(c.ctype==='ALL' || c.ctype===S.ctype)) return;
+    const incoList = c.inco==='ALL' ? null : c.inco.split(',').map(x => x.trim());
+    if(incoList && !incoList.includes(S.inco)) return;
+    if(!incoList && S.mode!=='warehouse'){
+      const gate = (((DATA.matrix||{})[S.inco]||{})[cap(S.dir)]||{})[c.cat];
+      if(gate === 'N') return;
+    }
+    const row = {id:c.id, d:c.d, u:c.u, r:(c.r==null?'':c.r), q:c.q, rem:c.rem, rc:c.rc, on:c.on==='Y', vat:c.vat==='Y', locked:(c.rc==='Auto' && c.r>0)};
+    const p = prev[c.id];
+    if(p){ row.q=p.q; row.rem=p.rem; row.on=p.on; row.vat=p.vat; row.d=p.d; row.u=p.u; if(!row.locked) row.r=p.r; }
+    if(!(c.sec in idx)){ idx[c.sec] = secs.length; secs.push({sec:c.sec, rows:[]}); }
+    secs[idx[c.sec]].rows.push(row);
   });
+  S.charges = secs.concat(custom);
 }
 
-function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function toggleTerm(idx, v){ S.terms[idx].enabled = v; }
-function updateTerm(idx, v){ S.terms[idx].text = v; }
-function deleteTerm(idx){ S.terms.splice(idx,1); renderTerms(); }
-
-document.addEventListener('click', e => {
-  if(e.target.id === 'btn-add-tc'){
-    const inp = document.getElementById('tc-custom-inp');
-    const txt = inp.value.trim();
-    if(!txt) return;
-    S.terms.push({text:txt, enabled:true, type:'mode'});
-    inp.value = '';
-    renderTerms();
-  }
-});
-
-// ═══════════════════════════════════════════════════════════════
-// CHIPS
-// ═══════════════════════════════════════════════════════════════
-function initChips(){
-  setupChips('chips-mode', v => {
-    S.mode = v;
-    updateModeUI();
-    loadChargeTemplate();
-    renderCharges();
-    renderCargoFields();
-    loadTerms();
-  });
-  setupChips('chips-dir', v => { S.dir = v; loadChargeTemplate(); renderCharges(); });
-  setupChips('chips-cnt', v => { S.cnt = v; loadChargeTemplate(); renderCharges(); });
-  setupChips('chips-cargo', v => { S.cargo = v; });
-  setupChips('chips-inco', v => {
-    S.inco = v;
-    document.getElementById('inco-desc').textContent = INCO_DESC[v]||'';
-  });
-  document.getElementById('inco-desc').textContent = INCO_DESC['FOB'];
-}
-
-function setupChips(id, cb){
-  document.getElementById(id).querySelectorAll('.chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById(id).querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      cb(btn.dataset.val);
-    });
-  });
-}
-
-function updateModeUI(){
-  const isWH  = S.mode === 'warehouse';
-  const isAir = S.mode === 'air';
-  document.getElementById('sec-direction').classList.toggle('hidden', isWH);
-  document.getElementById('sec-container').classList.toggle('hidden', isWH || isAir);
-
-  const cntChips = document.querySelectorAll('#chips-cnt .chip');
-  cntChips.forEach(c => {
-    if(c.dataset.val==='fcl') c.textContent = S.mode==='land' ? 'FTL' : 'FCL';
-    if(c.dataset.val==='lcl') c.textContent = S.mode==='land' ? 'LTL' : 'LCL';
-  });
-
-  const polL = document.getElementById('lbl-pol');
-  const podL = document.getElementById('lbl-pod');
-  const delL = document.getElementById('lbl-delivery');
-  if(isAir){ polL.textContent='Airport of Origin'; podL.textContent='Airport of Destination'; delL.textContent='Place of Delivery';}
-  else if(S.mode==='land'){ polL.textContent='Loading Point / Origin'; podL.textContent='Delivery Point / Destination'; delL.textContent='Final Delivery Location';}
-  else if(isWH){ polL.textContent='Warehouse Location'; podL.textContent='(N/A)'; delL.textContent='Delivery Point (if applicable)';}
-  else { polL.textContent='Port of Loading (POL)'; podL.textContent='Port of Discharge (POD)'; delL.textContent='Final Place of Delivery';}
-}
-
-// ═══════════════════════════════════════════════════════════════
-// DYNAMIC CARGO FIELDS
-// ═══════════════════════════════════════════════════════════════
-function renderCargoFields(){
-  const el = document.getElementById('cargo-fields');
-  const isFCL = (S.cnt==='fcl' || S.cnt==='ftl');
-  let html = '<div class="fg">';
-  if(S.mode==='sea' && isFCL){
-    html += fld('Container Type','f-cntype','select',["20'GP","40'GP","40'HC","45'HC","20' Reefer","40' Reefer"]);
-    html += fld('Number of Containers','f-numcnt','text',"e.g., 2 × 40'HC");
-    html += fld('Gross Weight (MT)','f-weight','text','');
-    html += fld('Shipping Line','f-carrier','text','e.g., MSC, Maersk, CMA CGM');
-  }
-  if(S.mode==='sea' && !isFCL){
-    html += fld('Volume (CBM)','f-cbm','text','');
-    html += fld('Gross Weight (KG)','f-weight','text','');
-    html += fld('No. of Packages / Pallets','f-pkgs','text','');
-    html += fld('Dimensions (L×W×H cm)','f-dims','text','Per package — for W/M calc');
-  }
-  if(S.mode==='air'){
-    html += fld('Actual Weight (KG)','f-weight','text','');
-    html += fld('Dimensions (L×W×H cm)','f-dims','text','Per package');
-    html += fld('Volumetric Weight (KG)','f-volwt','text','L×W×H (cm) ÷ 6000');
-    html += fld('Chargeable Weight (KG)','f-chargewt','text','Higher of actual or volumetric');
-    html += fld('No. of Pieces / Pallets','f-pkgs','text','');
-    html += fld('Airline / Routing Preference','f-carrier','text','e.g., Emirates SkyCargo');
-  }
-  if(S.mode==='land'){
-    html += fld('Truck Type','f-trucktype','select',["40' Trailer (FTL)","20' Flatbed (FTL)","Curtain Side","Reefer Truck","LTL — loose cargo"]);
-    html += fld('No. of Trucks','f-numcnt','text','');
-    html += fld('Gross Weight (MT)','f-weight','text','');
-    html += fld('Volume (CBM)','f-cbm','text','');
-  }
-  if(S.mode==='warehouse'){
-    html += fld('No. of Pallets','f-pallets','text','');
-    html += fld('Volume (CBM)','f-cbm','text','');
-    html += fld('Storage Duration','f-storedur','text','e.g., 1 month, 2 weeks');
-    html += fld('No. of SKUs','f-skus','text','');
-  }
-  html += fld('Estimated Transit Time','f-transit','text','e.g., 14–21 days');
-  html += fld('Special Requirements','f-special','text','DG, Reefer, OOG, Pharma etc.');
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function fld(lbl, id, type, ph){
-  if(type==='select'){
-    const opts = Array.isArray(ph) ? ph.map(o=>`<option>${o}</option>`).join('') : '';
-    return `<div class="fgrp"><label>${lbl}</label><select id="${id}">${opts}</select></div>`;
-  }
-  return `<div class="fgrp"><label>${lbl}</label><input type="text" id="${id}" placeholder="${ph}"></div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CHARGE TEMPLATE LOADING
-// ═══════════════════════════════════════════════════════════════
-function loadChargeTemplate(){
-  let key = S.mode==='warehouse' ? 'warehouse' : `${S.mode}-${S.dir}-${S.cnt}`;
-  const tmpl = TEMPLATES[key] || [];
-  S.charges = tmpl.map(sec => ({
-    sec: sec.sec,
-    rows: sec.rows.map(r => ({...r}))
+function calc(){
+  let sub = 0, vatBase = 0;
+  S.charges.forEach(s => s.rows.forEach(r => {
+    if(!r.on) return;
+    const a = num(r.r)*num(r.q); sub += a; if(r.vat) vatBase += a;
   }));
+  let disc = S.disc.type==='pct' ? sub*num(S.disc.val)/100 : num(S.disc.val);
+  disc = Math.min(Math.max(disc,0), sub);
+  const ratio = sub ? (1 - disc/sub) : 1;
+  const vb = vatBase*ratio, vat = vb*S.vatRate, net = sub-disc;
+  return {sub, disc, net, vatBase:vb, vat, grand:net+vat};
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDER CHARGES — uses data attributes, NO inline onchange
-// ═══════════════════════════════════════════════════════════════
 function renderCharges(){
-  const body = document.getElementById('charges-body');
-  let html = '';
-  let num = 1;
+  let html = '', n = 1;
   S.charges.forEach((sec, si) => {
-    html += `<tr class="sec-row" data-sec="${si}">
-      <td colspan="8">▸ &nbsp;${escHtml(sec.sec)}</td>
-      <td style="text-align:right;"><button class="del-btn" data-action="del-sec" data-si="${si}" title="Remove section">✕</button></td>
-    </tr>`;
+    html += `<tr class="sec-row"><td colspan="9">▸ &nbsp;${escHtml(sec.sec)}</td><td style="text-align:right;"><button class="del-btn" data-action="del-sec" data-si="${si}" title="Remove section">✕</button></td></tr>`;
     sec.rows.forEach((row, ri) => {
-      const bg = ri%2===0?'':'background:#EBF1F8;';
-      html += `<tr data-si="${si}" data-ri="${ri}" style="${bg}">
-        <td style="text-align:center;color:#6b7280;font-size:12px;">${num++}</td>
-        <td><input type="text" value="${escHtml(row.d)}" data-si="${si}" data-ri="${ri}" data-key="d" class="ci-text" style="min-width:155px;"></td>
-        <td><input type="text" value="${escHtml(row.u)}" data-si="${si}" data-ri="${ri}" data-key="u" class="ci-text"></td>
-        <td><input type="number" value="${row.r||''}" placeholder="0.00" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="r" class="ci-num" style="text-align:right;"></td>
-        <td><input type="number" value="${row.q||''}" placeholder="0" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="q" class="ci-num" style="text-align:right;"></td>
-        <td class="amt" id="amt-${si}-${ri}">${fmtAmt(row.r,row.q)}</td>
-        <td style="text-align:center;font-size:12px;color:#555;">${S.currency}</td>
-        <td><input type="text" value="${escHtml(row.rem||'')}" placeholder="Remarks…" data-si="${si}" data-ri="${ri}" data-key="rem" class="ci-text" style="min-width:90px;"></td>
+      const a = num(row.r)*num(row.q);
+      html += `<tr class="${ri%2===0?'':'r-even'} ${row.on?'':'off'}" data-si="${si}" data-ri="${ri}">
+        <td class="ctr" style="color:#6b7280;">${n++}</td>
+        <td class="ctr"><input type="checkbox" data-si="${si}" data-ri="${ri}" data-key="on" ${row.on?'checked':''}></td>
+        <td><input type="text" value="${escHtml(row.d)}" data-si="${si}" data-ri="${ri}" data-key="d"></td>
+        <td><input type="text" value="${escHtml(row.u)}" data-si="${si}" data-ri="${ri}" data-key="u"></td>
+        <td><input type="number" value="${row.r===''?'':row.r}" placeholder="0.00" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="r" class="${row.locked?'locked':''}" ${row.locked?'readonly title="Fixed rate"':''} style="text-align:right;"></td>
+        <td><input type="number" value="${row.q===''?'':row.q}" placeholder="0" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="q" style="text-align:right;"></td>
+        <td class="amt" id="amt-${si}-${ri}">${a? money(a) : '<span style="color:#aaa;">—</span>'}${row.locked?' <span class="lock">🔒</span>':''}</td>
+        <td class="ctr"><input type="checkbox" data-si="${si}" data-ri="${ri}" data-key="vat" ${row.vat?'checked':''}></td>
+        <td><input type="text" value="${escHtml(row.rem||'')}" placeholder="Remarks…" data-si="${si}" data-ri="${ri}" data-key="rem"></td>
         <td><button class="del-btn" data-action="del-row" data-si="${si}" data-ri="${ri}" title="Remove row">✕</button></td>
       </tr>`;
     });
   });
-  body.innerHTML = html;
+  $('charges-body').innerHTML = html;
   updateTotals();
 }
 
-function fmtAmt(r, q){
-  const v = parseFloat(r||0) * parseFloat(q||0);
-  if(!v) return '<span style="color:#aaa;">—</span>';
-  return v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+function updateTotals(){
+  const c = calc(), cur = S.currency, f = v => cur+' '+money(v);
+  $('tot-sub').textContent = f(c.sub);
+  $('tot-disc').textContent = c.disc ? '− '+f(c.disc) : f(0);
+  $('tot-net').textContent = f(c.net);
+  $('vat-lbl').textContent = `VAT (${Math.round(S.vatRate*10000)/100}% on ${f(c.vatBase)})`;
+  $('tot-vat').textContent = f(c.vat);
+  $('tot-grand').textContent = f(c.grand);
 }
 
-// ── Event delegation on charges body ──
 function initChargesEvents(){
-  const body = document.getElementById('charges-body');
-
-  // INPUT on text/number fields — update state only; for rate/qty also refresh amount cell
-  body.addEventListener('input', e => {
-    const inp = e.target;
-    if(!inp.dataset.key) return;
-    const si = +inp.dataset.si, ri = +inp.dataset.ri, key = inp.dataset.key;
-    S.charges[si].rows[ri][key] = inp.value;
-    if(key === 'r' || key === 'q'){
-      const amtCell = document.getElementById(`amt-${si}-${ri}`);
-      if(amtCell) amtCell.innerHTML = fmtAmt(S.charges[si].rows[ri].r, S.charges[si].rows[ri].q);
+  const body = $('charges-body');
+  const apply = e => {
+    const el = e.target; if(!el.dataset.key) return;
+    const si = +el.dataset.si, ri = +el.dataset.ri, key = el.dataset.key, row = S.charges[si].rows[ri];
+    if(el.type==='checkbox'){
+      row[key] = el.checked;
+      if(key==='on'){ el.closest('tr').classList.toggle('off', !el.checked); }
+    } else row[key] = el.value;
+    if(key==='r' || key==='q' || key==='on' || key==='vat'){
+      const cell = $(`amt-${si}-${ri}`);
+      if(cell){ const a = num(row.r)*num(row.q); cell.innerHTML = (a? money(a) : '<span style="color:#aaa;">—</span>') + (row.locked?' <span class="lock">🔒</span>':''); }
       updateTotals();
     }
-  });
-
-  // CLICK for delete buttons
+  };
+  body.addEventListener('input', apply);
+  body.addEventListener('change', apply);
   body.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if(!btn) return;
+    const btn = e.target.closest('[data-action]'); if(!btn) return;
     const si = +btn.dataset.si;
-    if(btn.dataset.action === 'del-row'){
-      const ri = +btn.dataset.ri;
-      S.charges[si].rows.splice(ri, 1);
-      if(S.charges[si].rows.length === 0) S.charges.splice(si, 1);
-    } else if(btn.dataset.action === 'del-sec'){
-      S.charges.splice(si, 1);
-    }
+    if(btn.dataset.action==='del-row'){ S.charges[si].rows.splice(+btn.dataset.ri,1); if(!S.charges[si].rows.length) S.charges.splice(si,1); }
+    else S.charges.splice(si,1);
     renderCharges();
   });
-
-  // ADD ROW button
-  document.getElementById('btn-add-row').addEventListener('click', () => {
-    if(S.charges.length === 0){
-      S.charges.push({sec:'ADDITIONAL CHARGES', rows:[]});
-    }
-    S.charges[S.charges.length - 1].rows.push({d:'', u:'Per Shipment', r:'', q:1, rem:''});
+  $('btn-add-row').addEventListener('click', () => {
+    if(!S.charges.length) S.charges.push({sec:'ADDITIONAL CHARGES', rows:[]});
+    S.charges[S.charges.length-1].rows.push({d:'', u:'Per Shipment', r:'', q:1, rem:'', rc:'Editable', on:true, vat:true, locked:false});
     renderCharges();
-    // Scroll to and focus the new description input
-    setTimeout(() => {
-      const allInputs = document.querySelectorAll('#charges-body .ci-text');
-      if(allInputs.length) allInputs[allInputs.length - 4].focus();
-    }, 30);
   });
-
-  // ADD SECTION button
-  document.getElementById('btn-add-sec').addEventListener('click', () => {
-    const inp = document.getElementById('new-sec-name');
-    const name = (inp.value || 'ADDITIONAL CHARGES').trim().toUpperCase();
-    inp.value = '';
-    S.charges.push({sec: name, rows:[{d:'', u:'Per Shipment', r:'', q:1, rem:''}]});
+  $('btn-add-sec').addEventListener('click', () => {
+    const name = ($('new-sec-name').value || 'ADDITIONAL CHARGES').trim().toUpperCase(); $('new-sec-name').value = '';
+    S.charges.push({sec:name, rows:[{d:'', u:'Per Shipment', r:'', q:1, rem:'', rc:'Editable', on:true, vat:true, locked:false}]});
     renderCharges();
-    setTimeout(() => {
-      const allInputs = document.querySelectorAll('#charges-body .ci-text');
-      if(allInputs.length) allInputs[allInputs.length - 4].focus();
-    }, 30);
+  });
+  $('disc-type').addEventListener('change', e => { S.disc.type = e.target.value; updateTotals(); });
+  $('disc-val').addEventListener('input', e => { S.disc.val = e.target.value; updateTotals(); });
+  $('f-currency').addEventListener('change', e => { S.currency = e.target.value; updateTotals(); });
+  $('f-vat').addEventListener('change', e => { S.vatRate = parseFloat(e.target.value); updateTotals(); });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TERMS & CONDITIONS (layered from DATA)
+// ═══════════════════════════════════════════════════════════════
+const LAYER_ORDER = ['COMMON','MODE','DIRECTION','LOAD','NATURE','CARGO TYPE','INCOTERM'];
+const LAYER_NAME = {COMMON:'Standard Terms','MODE':'Mode','DIRECTION':'Direction','LOAD':'Load Type','NATURE':'Cargo Nature','CARGO TYPE':'Type of Cargo','INCOTERM':'Incoterm','CUSTOM':'Custom'};
+function buildTerms(){
+  const prev = {}; S.terms.forEach(t => { if(t.id) prev[t.id] = t; });
+  const custom = S.terms.filter(t => !t.id);
+  const keys = {
+    'COMMON':['ALL'], 'MODE':[cap(S.mode)], 'DIRECTION':S.mode==='warehouse'?[]:[cap(S.dir)],
+    'LOAD':[loadLabel()], 'NATURE':[cap(S.cargo)], 'CARGO TYPE':[S.ctype], 'INCOTERM':[S.inco],
+  };
+  const out = [];
+  LAYER_ORDER.forEach(layer => {
+    DATA.terms.filter(t => t.layer===layer && keys[layer].includes(t.key) && (t.mode==='ALL' || t.mode===cap(S.mode))).forEach(t => {
+      const p = prev[t.id];
+      out.push({id:t.id, layer, text:p?p.text:t.text, on:p?p.on:t.on, untick:t.untick});
+    });
+  });
+  S.terms = out.concat(custom);
+}
+function renderTerms(){
+  $('tc-badge').textContent = routeLabel();
+  let html = '', last = '';
+  S.terms.forEach((t, i) => {
+    const layer = t.id ? t.layer : 'CUSTOM';
+    if(layer !== last){ html += `<div class="tc-group-hdr">${LAYER_NAME[layer]||layer}</div>`; last = layer; }
+    html += `<div class="tc-item"><input type="checkbox" ${t.on?'checked':''} ${t.untick===false?'disabled title="Required term"':''} data-i="${i}">
+      <textarea rows="2" data-i="${i}">${escHtml(t.text)}</textarea>
+      <button class="tc-del" data-i="${i}" title="Remove">✕</button></div>`;
+  });
+  $('tc-list').innerHTML = html || '<p class="hint">No terms for this selection.</p>';
+}
+function initTermsEvents(){
+  const list = $('tc-list');
+  list.addEventListener('change', e => { if(e.target.type==='checkbox') S.terms[+e.target.dataset.i].on = e.target.checked; });
+  list.addEventListener('input', e => { if(e.target.tagName==='TEXTAREA') S.terms[+e.target.dataset.i].text = e.target.value; });
+  list.addEventListener('click', e => { const b = e.target.closest('.tc-del'); if(b){ S.terms.splice(+b.dataset.i,1); renderTerms(); } });
+  $('btn-add-tc').addEventListener('click', () => {
+    const txt = $('tc-custom-inp').value.trim(); if(!txt) return;
+    S.terms.push({text:txt, on:true}); $('tc-custom-inp').value=''; renderTerms();
   });
 }
 
-function updateTotals(){
-  let sub = 0;
-  S.charges.forEach(sec => sec.rows.forEach(r => {
-    sub += parseFloat(r.r||0) * parseFloat(r.q||0);
+// ═══════════════════════════════════════════════════════════════
+// SELECTORS
+// ═══════════════════════════════════════════════════════════════
+function setupChips(id, cb){
+  $(id).querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+    $(id).querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); cb(btn.dataset.val);
   }));
-  const vat = sub * S.vatRate, grand = sub + vat, cur = S.currency;
-  const fmt = v => cur + ' ' + v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('tot-sub').textContent  = fmt(sub);
-  document.getElementById('tot-vat').textContent  = fmt(vat);
-  document.getElementById('tot-grand').textContent = fmt(grand);
-  return {sub, vat, grand};
+}
+function setChip(id, val){
+  $(id).querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b.dataset.val===val));
+}
+function refreshTemplate(){ buildCharges(); renderCharges(); buildTerms(); renderTerms(); }
+function initChips(){
+  setupChips('chips-mode', v => { S.mode=v; updateModeUI(); renderCargoFields(); refreshTemplate(); });
+  setupChips('chips-dir', v => { S.dir=v; refreshTemplate(); });
+  setupChips('chips-cnt', v => { S.cnt=v; refreshTemplate(); });
+  setupChips('chips-cargo', v => { S.cargo=v; refreshTemplate(); });
+  setupChips('chips-ctype', v => { S.ctype=v; $('ctype-other-wrap').classList.toggle('hidden', v!=='Other'); refreshTemplate(); });
+  setupChips('chips-inco', v => { S.inco=v; $('inco-desc').textContent = INCO_DESC[v]||''; refreshTemplate(); });
+  $('inco-desc').textContent = INCO_DESC[S.inco];
+}
+function updateModeUI(){
+  const wh = S.mode==='warehouse', air = S.mode==='air';
+  $('sec-direction').classList.toggle('hidden', wh);
+  $('sec-container').classList.toggle('hidden', wh || air);
+  $('chips-cnt').querySelectorAll('.chip').forEach(c => {
+    if(c.dataset.val==='fcl') c.textContent = S.mode==='land' ? 'FTL' : 'FCL';
+    if(c.dataset.val==='lcl') c.textContent = S.mode==='land' ? 'LTL' : 'LCL';
+  });
+  const polL=$('lbl-pol'), podL=$('lbl-pod'), delL=$('lbl-delivery');
+  if(air){ polL.textContent='Airport of Origin'; podL.textContent='Airport of Destination'; delL.textContent='Place of Delivery'; }
+  else if(S.mode==='land'){ polL.textContent='Loading Point / Origin'; podL.textContent='Delivery Point / Destination'; delL.textContent='Final Delivery Location'; }
+  else if(wh){ polL.textContent='Warehouse Location'; podL.textContent='(N/A)'; delL.textContent='Delivery Point (if applicable)'; }
+  else { polL.textContent='Port of Loading (POL)'; podL.textContent='Port of Discharge (POD)'; delL.textContent='Final Place of Delivery'; }
+}
+function fld(lbl, id, type, ph){
+  if(type==='select') return `<div class="fgrp"><label>${lbl}</label><select id="${id}">${ph.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+  return `<div class="fgrp"><label>${lbl}</label><input type="text" id="${id}" placeholder="${ph}"></div>`;
+}
+function renderCargoFields(){
+  const isFull = (S.cnt==='fcl');
+  let h = '<div class="fg">';
+  if(S.mode==='sea' && isFull){
+    h += fld('Container Type','f-cntype','select',["20'GP","40'GP","40'HC","45'HC","20' Reefer","40' Reefer"]);
+    h += fld('Number of Containers','f-numcnt','text',"e.g., 2 × 40'HC");
+    h += fld('Gross Weight (MT)','f-weight','text','');
+    h += fld('Shipping Line','f-carrier','text','e.g., MSC, Maersk, CMA CGM');
+  }
+  if(S.mode==='sea' && !isFull){
+    h += fld('Volume (CBM)','f-cbm','text','');
+    h += fld('Gross Weight (KG)','f-weight','text','');
+    h += fld('No. of Packages / Pallets','f-pkgs','text','');
+    h += fld('Dimensions (L×W×H cm)','f-dims','text','Per package');
+  }
+  if(S.mode==='air'){
+    h += fld('Actual Weight (KG)','f-weight','text','');
+    h += fld('Dimensions (L×W×H cm)','f-dims','text','Per package');
+    h += fld('Volumetric Weight (KG)','f-volwt','text','L×W×H (cm) ÷ 6000');
+    h += fld('Chargeable Weight (KG)','f-chargewt','text','Higher of actual or volumetric');
+    h += fld('No. of Pieces / Pallets','f-pkgs','text','');
+    h += fld('Airline / Routing Preference','f-carrier','text','e.g., Emirates SkyCargo');
+  }
+  if(S.mode==='land'){
+    h += fld('Truck Type','f-trucktype','select',["40' Trailer (FTL)","20' Flatbed (FTL)","Curtain Side","Reefer Truck","LTL — loose cargo"]);
+    h += fld('No. of Trucks','f-numcnt','text','');
+    h += fld('Gross Weight (MT)','f-weight','text','');
+    h += fld('Volume (CBM)','f-cbm','text','');
+  }
+  if(S.mode==='warehouse'){
+    h += fld('No. of Pallets','f-pallets','text','');
+    h += fld('Volume (CBM)','f-cbm','text','');
+    h += fld('Storage Duration','f-storedur','text','e.g., 1 month, 2 weeks');
+    h += fld('No. of SKUs','f-skus','text','');
+  }
+  h += fld('Estimated Transit Time','f-transit','text','e.g., 14–21 days');
+  h += fld('Special Requirements','f-special','text','Temperature setting, DG class / UN no., dimensions…');
+  h += '</div>';
+  $('cargo-fields').innerHTML = h;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CURRENCY & VAT
+// RESET / RESTORE
 // ═══════════════════════════════════════════════════════════════
-function initListeners(){
-  document.getElementById('f-currency').addEventListener('change', e => {
-    S.currency = e.target.value; renderCharges();
-  });
-  document.getElementById('f-vat').addEventListener('change', e => {
-    S.vatRate = parseFloat(e.target.value);
-    document.getElementById('vat-pct-lbl').textContent = Math.round(S.vatRate*100) + '%';
-    updateTotals();
-  });
+function defaults(){
+  Object.assign(S,{mode:'sea',dir:'import',cnt:'fcl',cargo:'palletized',ctype:'General',inco:'FOB',currency:ST.currency||'USD',
+    vatRate:(typeof ST.vat_rate==='number'?ST.vat_rate:0.05), disc:{type:'pct',val:''}, charges:[], terms:[], persisted:false, createdBy:null});
+  setChip('chips-mode','sea'); setChip('chips-dir','import'); setChip('chips-cnt','fcl'); setChip('chips-cargo','palletized');
+  setChip('chips-ctype','General'); setChip('chips-inco','FOB');
+  $('ctype-other-wrap').classList.add('hidden');
+  $('inco-desc').textContent = INCO_DESC.FOB;
+  $('f-currency').value = S.currency; $('f-vat').value = String(S.vatRate); $('disc-type').value='pct'; $('disc-val').value='';
+}
+function resetForm(confirmFirst){
+  if(confirmFirst && !confirm('Reset all form data? This clears all entries.')) return;
+  document.querySelectorAll('#view-quote input[type=text],#view-quote input[type=email],#view-quote textarea').forEach(el => el.value='');
+  defaults(); updateModeUI(); renderCargoFields();
+  const d = new Date(), v = new Date(); v.setDate(d.getDate() + (parseInt(ST.validity_days)||14));
+  $('f-date').value = todayISO(); $('f-valid').value = v.toISOString().slice(0,10);
+  if(S.user) $('f-prepby').value = fullName(S.user);
+  refreshTemplate(); refreshQuoteNo();
+}
+function openQuote(rec){
+  const p = rec.payload; if(!p) return toast('This quotation has no saved details.');
+  defaults();
+  Object.assign(S, p.state);
+  ['mode','dir','cnt','cargo','ctype','inco'].forEach(k => setChip('chips-'+k, S[k]));
+  $('ctype-other-wrap').classList.toggle('hidden', S.ctype!=='Other');
+  updateModeUI(); renderCargoFields();
+  Object.keys(p.fields||{}).forEach(id => { const el=$(id); if(el) el.value = p.fields[id]; });
+  $('f-currency').value = S.currency; $('f-vat').value = String(S.vatRate);
+  $('disc-type').value = S.disc.type; $('disc-val').value = S.disc.val;
+  $('inco-desc').textContent = INCO_DESC[S.inco]||'';
+  S.charges = p.charges||[]; S.terms = p.terms||[];
+  S.persisted = true; S.createdBy = rec.created_by_email;
+  renderCharges(); renderTerms(); showView('quote'); setSaveState('Opened '+rec.quote_no);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// RESET
+// PDF  (fits one page; falls back to clean multi-page only if it must)
 // ═══════════════════════════════════════════════════════════════
-function resetForm(){
-  if(!confirm('Reset all form data? This will clear all entries.')) return;
-  document.querySelectorAll('input[type=text],input[type=date],input[type=email],textarea').forEach(el => el.value='');
-  ['chips-mode','chips-dir','chips-cnt','chips-cargo','chips-inco'].forEach(id => {
-    document.getElementById(id).querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  });
-  document.querySelector('#chips-mode [data-val="sea"]').classList.add('active');
-  document.querySelector('#chips-dir [data-val="import"]').classList.add('active');
-  document.querySelector('#chips-cnt [data-val="fcl"]').classList.add('active');
-  document.querySelector('#chips-cargo [data-val="palletized"]').classList.add('active');
-  document.querySelector('#chips-inco [data-val="FOB"]').classList.add('active');
-  Object.assign(S,{mode:'sea',dir:'import',cnt:'fcl',cargo:'palletized',inco:'FOB',currency:'USD',vatRate:0.05});
-  loadChargeTemplate(); renderCharges(); renderCargoFields(); updateModeUI(); loadTerms();
-  document.getElementById('inco-desc').textContent = INCO_DESC['FOB'];
-  const today = new Date(), valid = new Date(); valid.setDate(today.getDate()+14);
-  document.getElementById('f-date').value  = today.toISOString().slice(0,10);
-  document.getElementById('f-valid').value = valid.toISOString().slice(0,10);
+function pdfSafe(s){
+  return String(s==null?'':s).replace(/≤/g,'<=').replace(/≥/g,'>=').replace(/→/g,'->').replace(/[▸►]/g,'>').replace(/[✕×✓]/g, m => m==='×'?'x':'')
+    .replace(/[−]/g,'-').replace(/[‐‑]/g,'-').replace(/[^\x00-\xFF€–—‘’“”•…]/g,'');
 }
-
-// ═══════════════════════════════════════════════════════════════
-// PDF GENERATION
-// ═══════════════════════════════════════════════════════════════
-function gv(id){ return (document.getElementById(id)||{}).value || ''; }
-
-function generatePDF(){
+function contactLine(){
+  return [ST.address, ST.phone, ST.website, ST.company_email||'sasco@sascoglobal.com'].filter(Boolean).join('   |   ');
+}
+function buildPdf(scale, multi){
   const {jsPDF} = window.jspdf;
   const doc = new jsPDF({orientation:'p', unit:'mm', format:'a4'});
-  const W=210, ml=12, mr=12, cw=W-ml-mr;
+  const W=210, H=297, ml=10, mr=10, cw=W-ml-mr, FOOT=12, LIMIT=H-FOOT-1.5;
+  const C = calc(), cur = S.currency;
+  const company = ST.company_name || 'Sasco Global Shipping LLC';
+  const NAVY=[27,42,74], NAVY2=[46,77,139], ORANGE=[232,99,10], ALT=[235,241,248], WHITE=[255,255,255], GOLD=[245,197,24], ORA_LT=[253,235,208];
+  const fsz = (base,min) => Math.max(min, base*scale);
+  const quotNo = gv('f-quotno'), quotDate = gv('f-date') || todayISO();
+  let overflow = false, y = 0;
 
-  let sub=0;
-  S.charges.forEach(sec => sec.rows.forEach(r => { sub += parseFloat(r.r||0)*parseFloat(r.q||0); }));
-  const vat=sub*S.vatRate, grand=sub+vat, cur=S.currency;
-  const fmtN = v => cur+' '+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-
-  const NAVY=[27,42,74], NAVY2=[46,77,139], ORANGE=[232,99,10], ALT=[235,241,248];
-  const WHITE=[255,255,255], GOLD=[245,197,24], ORA_LT=[253,235,208];
-
-  // ── PAGE HEADER helper ──
-  function pageHeader(){
-    doc.setFillColor(...NAVY);
-    doc.rect(0,0,W,38,'F');
-    doc.setFillColor(...ORANGE);
-    doc.rect(0,0,5,38,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...WHITE);
-    doc.text('SASCO GLOBAL FREIGHT & LOGISTICS LLC',10,12);
-    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...GOLD);
-    doc.text('Your Trusted Freight Forwarding Partner in Dubai, UAE',10,19);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
-    doc.text('www.sascoglobal.com  |  info@sascoglobal.com  |  Dubai, United Arab Emirates',10,26);
-    doc.setFillColor(...ORANGE); doc.rect(0,36,W,2.5,'F');
-  }
-
-  function contHeader(){
-    doc.setFillColor(...NAVY); doc.rect(0,0,W,14,'F');
-    doc.setFillColor(...ORANGE); doc.rect(0,0,5,14,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...WHITE);
-    doc.text('SASCO GLOBAL FREIGHT & LOGISTICS LLC — Quotation (continued)',10,9);
-  }
-
-  function checkPage(y, needed){
-    if(y + needed > 278){ doc.addPage(); contHeader(); return 18; }
-    return y;
-  }
-
-  pageHeader();
-  let y=43;
-
-  // ── TITLE BAR ──
-  const mL={sea:'SEA',air:'AIR',land:'LAND',warehouse:'WAREHOUSING'}[S.mode];
-  const dL=S.mode==='warehouse'?'':S.dir==='import'?' IMPORT':' EXPORT';
-  const cL=S.mode==='sea'?` — ${S.cnt.toUpperCase()}`:S.mode==='land'?` — ${S.cnt.toUpperCase()}`:'';
-  const title=`${mL}${dL}${cL} FREIGHT QUOTATION  |  Incoterms: ${S.inco}  |  Cargo: ${S.cargo.toUpperCase()}`;
-  doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,9,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...WHITE);
-  doc.text(title,ml+3,y+6.2); y+=12;
-
-  // ── QUOT INFO + CLIENT ──
-  const quotDate=gv('f-date')||new Date().toISOString().slice(0,10);
-  const quotNo=gv('f-quotno')||'SG-'+new Date().getFullYear()+'-XXXX';
-  const infoRows=[
-    ['Quotation No.',quotNo], ['Date',quotDate],
-    ['Valid Until',gv('f-valid')], ['Prepared By',gv('f-prepby')||'SASCO Global'],
-    ['Incoterms',S.inco], ['Currency',cur],
-  ];
-  const lW=cw*0.48, rW=cw-lW-2, lX=ml, rX=ml+lW+2;
-  const rH=6;
-
-  doc.setFillColor(...NAVY); doc.rect(lX,y,lW,7,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...WHITE);
-  doc.text('QUOTATION DETAILS',lX+2,y+5);
-  doc.setFillColor(...NAVY); doc.rect(rX,y,rW,7,'F');
-  doc.text('CLIENT / CUSTOMER DETAILS',rX+2,y+5); y+=7;
-
-  infoRows.forEach(([lbl,val],i)=>{
-    doc.setFillColor(...(i%2===0?ALT:WHITE)); doc.rect(lX,y,lW,rH,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(70,70,70);
-    doc.text(lbl,lX+2,y+4.2);
-    doc.setFont('helvetica','normal'); doc.setTextColor(0,0,150);
-    doc.text(String(val||''),lX+42,y+4.2); y+=rH;
-  });
-
-  const cliRows=[
-    ['Company',gv('f-company')],['Contact',gv('f-contact')],
-    ['Email',gv('f-email')],['Phone',gv('f-phone')],
-    ['Address',gv('f-address')],['',''],
-  ];
-  let cy=y-infoRows.length*rH;
-  cliRows.forEach(([lbl,val],i)=>{
-    doc.setFillColor(...(i%2===0?ALT:WHITE)); doc.rect(rX,cy,rW,rH,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(70,70,70);
-    if(lbl) doc.text(lbl,rX+2,cy+4.2);
-    doc.setFont('helvetica','normal'); doc.setTextColor(0,0,150);
-    if(val) doc.text(String(val),rX+28,cy+4.2,{maxWidth:rW-30}); cy+=rH;
-  });
-  y+=4;
-
-  // ── SHIPMENT DETAILS ──
-  doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
-  doc.text('SHIPMENT DETAILS',ml+2,y+5); y+=7;
-
-  const cargoIds=['f-cntype','f-numcnt','f-weight','f-carrier','f-cbm','f-pkgs','f-dims','f-volwt','f-chargewt','f-pallets','f-storedur','f-skus','f-trucktype','f-transit','f-special'];
-  const shipRows=[
-    [S.mode==='air'?'Airport of Origin':S.mode==='land'?'Loading Point':'Port of Loading (POL)',gv('f-pol'),
-     'Final Delivery',gv('f-delivery')],
-    [S.mode==='air'?'Airport of Destination':'Port of Discharge (POD)',gv('f-pod'),
-     'Commodity',gv('f-commodity')],
-    ['Mode / Direction',`${mL}${dL}${cL}`, 'Incoterms',S.inco],
-  ];
-  const extras=[];
-  cargoIds.forEach(id=>{ const el=document.getElementById(id); if(el&&el.value){ const lbl=el.previousElementSibling?.textContent||id; extras.push([lbl,el.value]); }});
-  for(let i=0;i<extras.length;i+=2){
-    const [l1,v1]=extras[i], [l2,v2]=extras[i+1]||['',''];
-    shipRows.push([l1,v1,l2,v2]);
-  }
-  const cW4=cw/4;
-  shipRows.forEach((row,ri)=>{
-    doc.setFillColor(...(ri%2===0?ALT:WHITE)); doc.rect(ml,y,cw,7,'F');
-    for(let ci=0;ci<4;ci++){
-      const tx=ml+ci*cW4+2;
-      if(ci%2===0){ doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(70,70,70); }
-      else { doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(0,0,150); }
-      doc.text(row[ci]||'',tx,y+4.5,{maxWidth:cW4-4});
+  function header(first){
+    if(first){
+      doc.setFillColor(...NAVY); doc.rect(0,0,W,22,'F');
+      doc.setFillColor(...ORANGE); doc.rect(0,0,5,22,'F'); doc.rect(0,22,W,1.6,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(14.5); doc.setTextColor(...WHITE);
+      doc.text(pdfSafe(company.toUpperCase()), 11, 9.5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...WHITE);
+      doc.text(pdfSafe(contactLine()), 11, 16, {maxWidth:118});
+      doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...WHITE);
+      doc.text('FREIGHT QUOTATION', W-mr, 9.5, {align:'right'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+      doc.text(pdfSafe('No. '+quotNo+'   |   '+quotDate), W-mr, 16, {align:'right'});
+      return 27;
     }
-    y+=7;
-  });
-  y+=5;
+    doc.setFillColor(...NAVY); doc.rect(0,0,W,12,'F'); doc.setFillColor(...ORANGE); doc.rect(0,0,5,12,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
+    doc.text(pdfSafe(company.toUpperCase()+'  -  Quotation '+quotNo+' (continued)'), 11, 7.5);
+    return 16;
+  }
+  function need(h){
+    if(y + h > LIMIT){ if(multi){ doc.addPage(); y = header(false); } else overflow = true; }
+  }
+  function bar(label){
+    const h = Math.max(4.4, 5.6*scale);
+    need(h+2); doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,h,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(fsz(8,6.4)); doc.setTextColor(...WHITE);
+    doc.text(label, ml+2, y+h*0.7); y += h;
+  }
 
-  // ── CHARGES TABLE ──
-  const tblBody=[];
-  let itemNum=1;
-  S.charges.forEach(sec=>{
-    tblBody.push([{content:'  ▸  '+sec.sec,colSpan:8,styles:{fillColor:ORANGE,textColor:WHITE,fontStyle:'bold',fontSize:8.5,cellPadding:3}}]);
-    sec.rows.forEach(r=>{
-      const amt=parseFloat(r.r||0)*parseFloat(r.q||0);
-      tblBody.push([
-        itemNum++, r.d||'', r.u||'',
-        r.r ? parseFloat(r.r).toLocaleString('en-US',{minimumFractionDigits:2}) : '—',
-        r.q ? parseFloat(r.q).toLocaleString('en-US',{minimumFractionDigits:2}) : '—',
-        amt ? amt.toLocaleString('en-US',{minimumFractionDigits:2}) : '—',
-        cur, r.rem||''
-      ]);
+  y = header(true);
+
+  // title
+  const title = pdfSafe(`${routeLabel().toUpperCase()}  |  Incoterms: ${S.inco}  |  Cargo: ${S.cargo.toUpperCase()}  |  Type: ${ctypeLabel().toUpperCase()}`);
+  const th = Math.max(5, 6.8*scale);
+  doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,th,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(fsz(8.6,7)); doc.setTextColor(...WHITE);
+  doc.text(title, ml+3, y+th*0.68, {maxWidth:cw-6}); y += th + 2;
+
+  // quotation + client
+  const rh = Math.max(3.8, 4.9*scale), lW = cw*0.48, rW = cw-lW-2, lX = ml, rX = ml+lW+2;
+  const left = [['Quotation No.',quotNo],['Date',quotDate],['Valid Until',gv('f-valid')],['Prepared By',gv('f-prepby')||company],['Currency',cur]];
+  const right = [['Company',gv('f-company')],['Contact',gv('f-contact')],['Email',gv('f-email')],['Phone',gv('f-phone')],['Address',gv('f-address')]];
+  need(rh*6+2);
+  doc.setFillColor(...NAVY); doc.rect(lX,y,lW,rh,'F'); doc.rect(rX,y,rW,rh,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(fsz(7.6,6.2)); doc.setTextColor(...WHITE);
+  doc.text('QUOTATION DETAILS', lX+2, y+rh*0.72); doc.text('CLIENT / CUSTOMER DETAILS', rX+2, y+rh*0.72); y += rh;
+  for(let i=0;i<5;i++){
+    doc.setFillColor(...(i%2===0?ALT:WHITE)); doc.rect(lX,y,lW,rh,'F'); doc.rect(rX,y,rW,rh,'F');
+    doc.setFontSize(fsz(7.6,6.2));
+    doc.setFont('helvetica','bold'); doc.setTextColor(70,70,70);
+    doc.text(left[i][0], lX+2, y+rh*0.72); doc.text(right[i][0], rX+2, y+rh*0.72);
+    doc.setFont('helvetica','normal'); doc.setTextColor(0,0,150);
+    doc.text(pdfSafe(left[i][1]||''), lX+28, y+rh*0.72, {maxWidth:lW-30});
+    doc.text(pdfSafe(right[i][1]||''), rX+22, y+rh*0.72, {maxWidth:rW-24});
+    y += rh;
+  }
+  y += 2;
+
+  // shipment details
+  bar('SHIPMENT DETAILS');
+  const polL = S.mode==='air'?'Airport of Origin':S.mode==='land'?'Loading Point':S.mode==='warehouse'?'Warehouse':'Port of Loading';
+  const podL = S.mode==='air'?'Airport of Destination':S.mode==='land'?'Delivery Point':'Port of Discharge';
+  const ship = [[polL,gv('f-pol'),'Final Delivery',gv('f-delivery')],[S.mode==='warehouse'?'':podL,S.mode==='warehouse'?'':gv('f-pod'),'Commodity',gv('f-commodity')]];
+  const ids = ['f-cntype','f-numcnt','f-weight','f-carrier','f-cbm','f-pkgs','f-dims','f-volwt','f-chargewt','f-pallets','f-storedur','f-skus','f-trucktype','f-transit','f-special'];
+  const ex = [];
+  ids.forEach(id => { const el=$(id); if(el && el.value){ ex.push([(el.previousElementSibling||{}).textContent||id, el.value]); } });
+  for(let i=0;i<ex.length;i+=2){ const a=ex[i], b=ex[i+1]||['','']; ship.push([a[0],a[1],b[0],b[1]]); }
+  const sh = Math.max(3.8, 5*scale), c4 = cw/4;
+  ship.forEach((row,ri) => {
+    need(sh); doc.setFillColor(...(ri%2===0?ALT:WHITE)); doc.rect(ml,y,cw,sh,'F');
+    for(let ci=0;ci<4;ci++){
+      doc.setFont('helvetica', ci%2===0?'bold':'normal'); doc.setFontSize(fsz(7.4,6)); if(ci%2===0) doc.setTextColor(70,70,70); else doc.setTextColor(0,0,150);
+      doc.text(pdfSafe(row[ci]||''), ml+ci*c4+2, y+sh*0.7, {maxWidth:c4-3});
+    }
+    y += sh;
+  });
+  y += 2;
+
+  // charges table
+  const body = [];
+  let k = 1;
+  S.charges.forEach(sec => {
+    const rows = sec.rows.filter(r => r.on);
+    if(!rows.length) return;
+    body.push([{content:pdfSafe(sec.sec), colSpan:8, styles:{fillColor:ORANGE, textColor:WHITE, fontStyle:'bold', halign:'left'}}]);
+    rows.forEach(r => {
+      const a = num(r.r)*num(r.q), act = /actual/i.test(r.u||'') && !num(r.r);
+      body.push([k++, pdfSafe(r.d), pdfSafe(r.u),
+        num(r.r)? money(num(r.r)) : '-', num(r.q)? String(num(r.q)) : '-',
+        a? money(a) : (act? 'At actuals':'-'), r.vat? 'Y':'-', pdfSafe(r.rem||'')]);
     });
   });
+  const tfs = Math.max(6.1, 7.8*scale), pad = Math.max(0.55, 1.35*scale);
+  if(body.length){
+    doc.autoTable({
+      startY:y, margin:{left:ml,right:mr,top:16,bottom:FOOT+2}, theme:'grid',
+      head:[['#','Description of Charges','Unit','Rate ('+cur+')','Qty','Amount ('+cur+')','VAT','Remarks']],
+      body,
+      styles:{font:'helvetica', fontSize:tfs, cellPadding:{top:pad,bottom:pad,left:1.4,right:1.4}, lineColor:[215,222,232], lineWidth:0.1, textColor:[30,30,30], overflow:'linebreak'},
+      headStyles:{fillColor:NAVY, textColor:WHITE, fontStyle:'bold', halign:'center'},
+      alternateRowStyles:{fillColor:ALT},
+      columnStyles:{0:{halign:'center',cellWidth:6},1:{cellWidth:62},2:{cellWidth:24},3:{halign:'right',cellWidth:19},4:{halign:'right',cellWidth:11},5:{halign:'right',cellWidth:23,fontStyle:'bold'},6:{halign:'center',cellWidth:9},7:{cellWidth:'auto'}},
+      didDrawPage: d => { if(d.pageNumber>1) header(false); },
+    });
+    y = doc.lastAutoTable.finalY + 2.5;
+    if(!multi && doc.getNumberOfPages()>1) overflow = true;
+  }
 
-  doc.autoTable({
-    startY: y, margin:{left:ml,right:mr},
-    head:[['#','Description of Charges','Unit','Rate','Qty/Wt','Amount','Ccy','Remarks']],
-    body: tblBody,
-    headStyles:{fillColor:NAVY,textColor:WHITE,fontSize:8,fontStyle:'bold',halign:'center',cellPadding:3},
-    bodyStyles:{fontSize:8,cellPadding:2.5},
-    alternateRowStyles:{fillColor:ALT},
-    columnStyles:{
-      0:{halign:'center',cellWidth:8},1:{cellWidth:52},2:{cellWidth:22},
-      3:{halign:'right',cellWidth:18},4:{halign:'right',cellWidth:14},
-      5:{halign:'right',cellWidth:22,fontStyle:'bold'},6:{halign:'center',cellWidth:12},7:{cellWidth:'auto'},
-    },
+  // totals (right) + notes (left)
+  const trh = Math.max(4.4, 5.6*scale), tW = 84, tX = W-mr-tW;
+  const trows = [['Subtotal', cur+' '+money(C.sub), ALT, false]];
+  if(C.disc>0) trows.push([`Discount${S.disc.type==='pct'&&num(S.disc.val)?' ('+num(S.disc.val)+'%)':''}`, '- '+cur+' '+money(C.disc), [233,247,238], false]);
+  trows.push([`VAT (${Math.round(S.vatRate*10000)/100}%)`, cur+' '+money(C.vat), ORA_LT, false]);
+  trows.push(['GRAND TOTAL', cur+' '+money(C.grand), ORANGE, true]);
+  const totH = trows.length*trh;
+  const notes = gv('f-notes').trim();
+  let nLines = [], nH = 0;
+  const nfs = Math.max(5.8, 7*scale), nlh = nfs*0.40;
+  if(notes){ doc.setFont('helvetica','normal'); doc.setFontSize(nfs); nLines = doc.splitTextToSize(pdfSafe(notes), cw-tW-8); nH = nLines.length*nlh + 5.5; }
+  need(Math.max(totH, nH) + 2);
+  let ty = y;
+  trows.forEach(([lbl,val,bg,g]) => {
+    doc.setFillColor(...bg); doc.rect(tX,ty,tW,trh,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(g?fsz(9.4,7.6):fsz(8.4,6.8)); doc.setTextColor(...(g?WHITE:[40,40,40]));
+    doc.text(lbl, tX+3, ty+trh*0.7); doc.text(val, tX+tW-3, ty+trh*0.7, {align:'right'}); ty += trh;
   });
-  y = doc.lastAutoTable.finalY + 5;
-
-  // ── TOTALS ──
-  y = checkPage(y, 30);
-  const tW=92, tX=W-mr-tW;
-  [['Subtotal (before VAT)', fmtN(sub), ALT],
-   [`VAT (${Math.round(S.vatRate*100)}%)`, fmtN(vat), ORA_LT],
-   ['GRAND TOTAL (incl. VAT)', fmtN(grand), ORANGE]
-  ].forEach(([lbl,val,bg],i)=>{
-    doc.setFillColor(...bg); doc.rect(tX,y,tW,9,'F');
-    const isG=i===2;
-    doc.setFont('helvetica','bold'); doc.setFontSize(isG?10:9); doc.setTextColor(...(isG?WHITE:[40,40,40]));
-    doc.text(lbl,tX+3,y+6); doc.text(val,tX+tW-3,y+6,{align:'right'}); y+=9;
-  });
-  y+=7;
-
-  // ── NOTES ──
-  const notes=gv('f-notes');
   if(notes){
-    y=checkPage(y,20);
-    doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
-    doc.text('NOTES / SPECIAL INSTRUCTIONS',ml+2,y+5); y+=9;
-    doc.setFillColor(...ALT); doc.rect(ml,y,cw,12,'F');
-    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(40,40,40);
-    doc.text(notes,ml+3,y+4,{maxWidth:cw-6}); y+=14;
+    doc.setFillColor(...ALT); doc.rect(ml,y,cw-tW-3,Math.max(nH,totH),'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(nfs); doc.setTextColor(...NAVY2); doc.text('NOTES', ml+2, y+3.6);
+    doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40); doc.text(nLines, ml+2, y+3.6+nlh+0.8);
   }
-  y+=2;
+  y += Math.max(totH, nH) + 3;
 
-  // ── TERMS & CONDITIONS ──
-  const activeTCs = S.terms.filter(t=>t.enabled);
-  if(activeTCs.length > 0){
-    y=checkPage(y,20);
-    doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
-    doc.text('TERMS & CONDITIONS',ml+2,y+5); y+=9;
-
-    activeTCs.forEach((term,i)=>{
-      const lines = doc.splitTextToSize(`${i+1}.  ${term.text}`, cw-8);
-      const rh = lines.length * 4.5 + 3;
-      y = checkPage(y, rh+2);
-      doc.setFillColor(...(i%2===0?ALT:WHITE)); doc.rect(ml,y,cw,rh,'F');
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(40,40,40);
-      doc.text(lines,ml+3,y+3.5); y+=rh;
+  // terms in two columns
+  const tcs = S.terms.filter(t => t.on && t.text && t.text.trim());
+  const sigH = Math.max(13, 17*scale);
+  if(tcs.length){
+    bar('TERMS & CONDITIONS');
+    const cfs = Math.max(5.4, 6.9*scale), clh = cfs*0.395, colW = (cw-3)/2;
+    doc.setFont('helvetica','normal'); doc.setFontSize(cfs);
+    const items = tcs.map((t,i) => { const lines = doc.splitTextToSize(pdfSafe(`${i+1}. ${t.text.trim()}`), colW-3); return {lines, h:lines.length*clh+1}; });
+    const total = items.reduce((a,b) => a+b.h, 0);
+    let acc = 0, split = items.length;
+    for(let i=0;i<items.length;i++){ if(acc + items[i].h/2 >= total/2){ split = i; break; } acc += items[i].h; }
+    const colsItems = [items.slice(0,split), items.slice(split)];
+    const colH = colsItems.map(c => c.reduce((a,b)=>a+b.h,0));
+    const boxH = Math.max(colH[0], colH[1]) + 2;
+    if(!multi){ need(boxH + sigH + 3); } else { need(Math.min(boxH, 40)); }
+    doc.setFillColor(250,251,253); doc.rect(ml,y,cw,boxH,'F');
+    colsItems.forEach((col,ci) => {
+      let cy = y + 1.6;
+      col.forEach(it => {
+        doc.setFont('helvetica','normal'); doc.setFontSize(cfs); doc.setTextColor(40,40,40);
+        doc.text(it.lines, ml + ci*(colW+3) + 1.5, cy + clh*0.8); cy += it.h;
+      });
     });
-    y+=6;
+    y += boxH + 2;
   }
 
-  // ── SIGNATURE ──
-  y=checkPage(y,45);
-  doc.setFillColor(...NAVY2); doc.rect(ml,y,cw,7,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE);
-  doc.text('AUTHORIZATION & ACCEPTANCE',ml+2,y+5); y+=9;
-
-  const sigW=cw/3;
-  const sigHdrs=['Prepared By: SASCO Global','Authorized Signatory: SASCO Global','Customer Acceptance & Signature'];
-  sigHdrs.forEach((h,i)=>{
-    doc.setFillColor(...ALT); doc.rect(ml+i*sigW,y,sigW-2,7,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(40,40,40);
-    doc.text(h,ml+i*sigW+2,y+4.5);
-  }); y+=7;
-  ['Name:','Designation:','Date:','Stamp / Seal:'].forEach(lbl=>{
-    sigHdrs.forEach((_,i)=>{
-      doc.setFillColor(...WHITE); doc.rect(ml+i*sigW,y,sigW-2,8,'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(120,120,120);
-      doc.text(lbl,ml+i*sigW+2,y+5);
-    }); y+=8;
+  // signature row (anchored just above the footer)
+  need(sigH + 1);
+  const sy = multi ? y : Math.max(y, LIMIT - sigH);
+  const sigW = cw/3, heads = ['Prepared By: '+company, 'Authorised Signatory', 'Customer Acceptance & Signature'];
+  const sl = ['Name / Designation:','Signature, Date & Stamp:'];
+  heads.forEach((h,i) => {
+    const x = ml + i*sigW;
+    doc.setFillColor(...ALT); doc.rect(x,sy,sigW-2,4.4,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(fsz(7.2,6)); doc.setTextColor(40,40,40); doc.text(pdfSafe(h), x+2, sy+3.1, {maxWidth:sigW-6});
+    doc.setDrawColor(200,205,215); doc.rect(x, sy+4.4, sigW-2, sigH-4.4);
+    doc.setFont('helvetica','normal'); doc.setFontSize(fsz(6.4,5.4)); doc.setTextColor(120,120,120);
+    doc.text(sl[0], x+2, sy+4.4+3.4); doc.text(sl[1], x+2, sy+sigH-1.8);
   });
+  y = sy + sigH;
 
-  // ── FOOTER on all pages ──
-  const pages=doc.internal.getNumberOfPages();
+  // footer on every page (three separate, non-overlapping lines)
+  const pages = doc.internal.getNumberOfPages();
   for(let i=1;i<=pages;i++){
     doc.setPage(i);
-    doc.setFillColor(...NAVY); doc.rect(0,284,W,13,'F');
-    doc.setFillColor(...ORANGE); doc.rect(0,284,5,13,'F');
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...WHITE);
-    doc.text('SASCO GLOBAL FREIGHT & LOGISTICS LLC  |  www.sascoglobal.com  |  info@sascoglobal.com  |  Dubai, UAE',W/2,291,{align:'center'});
-    doc.setTextColor(...GOLD); doc.text('CONFIDENTIAL — FOR ADDRESSEE ONLY',ml,291);
-    doc.setTextColor(...WHITE); doc.text(`Page ${i} of ${pages}`,W-mr,291,{align:'right'});
+    doc.setFillColor(...NAVY); doc.rect(0,H-FOOT,W,FOOT,'F'); doc.setFillColor(...ORANGE); doc.rect(0,H-FOOT,5,FOOT,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...WHITE);
+    doc.text(pdfSafe(company+'   |   '+(ST.company_email||'sasco@sascoglobal.com')+(ST.website?'   |   '+ST.website:'')), W/2, H-FOOT+4.4, {align:'center', maxWidth:cw});
+    doc.setFontSize(6.2); doc.setTextColor(...GOLD); doc.text('CONFIDENTIAL - FOR ADDRESSEE ONLY', ml, H-FOOT+9.2);
+    doc.setTextColor(...WHITE); doc.text(pdfSafe('Quotation '+quotNo), W/2, H-FOOT+9.2, {align:'center'});
+    doc.text('Page '+i+' of '+pages, W-mr, H-FOOT+9.2, {align:'right'});
   }
+  return {doc, overflow: overflow || (!multi && pages>1), pages};
+}
 
-  const fn=`SASCO_Quotation_${quotNo}_${quotDate}.pdf`;
-  doc.save(fn);
+function makePdf(){
+  for(let i=0;i<=11;i++){
+    const s = 1 - i*0.05, r = buildPdf(s, false);
+    if(!r.overflow) return {doc:r.doc, scale:s, pages:1};
+  }
+  const r = buildPdf(0.8, true);
+  toast('This quotation is long, so it prints on '+r.pages+' pages.', 5000);
+  return {doc:r.doc, scale:0.8, pages:r.pages};
+}
+function missingRates(){
+  let n = 0; S.charges.forEach(s => s.rows.forEach(r => { if(r.on && !num(r.r) && !/actual/i.test(r.u||'')) n++; }));
+  return n;
+}
+async function generatePDF(){
+  const miss = missingRates();
+  if(miss && !confirm(miss+' included charge line(s) have no rate. Continue anyway?')) return;
+  const {doc} = makePdf();
+  await saveQuote(true);
+  doc.save(`Sasco_Quotation_${gv('f-quotno')}_${gv('f-date')||todayISO()}.pdf`);
+  toast('PDF generated and quotation saved');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EMAIL FORMAT
+// ═══════════════════════════════════════════════════════════════
+function fill(t, map){ return String(t||'').replace(/\{(\w+)\}/g, (m,k) => k in map ? map[k] : m); }
+function buildEmail(){
+  const C = calc(), cur = S.currency, company = ST.company_name || 'Sasco Global Shipping LLC';
+  const vars = {quote_no:gv('f-quotno'), origin:gv('f-pol')||'origin', destination:(S.mode==='warehouse'?gv('f-delivery'):gv('f-pod'))||'destination',
+    mode:routeLabel(), contact_name:gv('f-contact')||'Sir/Madam', prepared_by:gv('f-prepby')||fullName(S.user||'')};
+  const subject = fill(ST.email_subject || 'Freight Quotation {quote_no} - {origin} to {destination} ({mode})', vars);
+  const greet = fill(ST.email_greeting || 'Dear {contact_name},', vars);
+  const open = ST.email_open || 'Thank you for your enquiry. Please find our quotation below.';
+  const close = ST.email_close || 'We trust the above is in order and look forward to your confirmation.';
+  let sig = fill(ST.email_sig || '{prepared_by}\n'+company+'\nsasco@sascoglobal.com', vars);
+  if(ST.phone && !sig.includes(ST.phone)) sig += '\n'+ST.phone;
+  const info = [
+    ['Quotation No.', gv('f-quotno')], ['Service', routeLabel()], ['Incoterms', S.inco],
+    ['Cargo', cap(S.cargo)+' / '+ctypeLabel()], [S.mode==='air'?'Airport of Origin':'Origin', gv('f-pol')],
+    [S.mode==='air'?'Airport of Destination':'Destination', gv('f-pod')], ['Final Delivery', gv('f-delivery')],
+    ['Commodity', gv('f-commodity')], ['Valid Until', gv('f-valid')],
+  ].filter(x => x[1]);
+  const tdS = 'padding:5px 8px;border:1px solid #d7dee8;font-size:13px;';
+  let h = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a202c;max-width:760px;">`;
+  h += `<p>${escHtml(greet)}</p><p>${escHtml(open)}</p>`;
+  h += `<table style="border-collapse:collapse;margin:10px 0;">` + info.map(i => `<tr><td style="${tdS}background:#EBF1F8;font-weight:bold;">${escHtml(i[0])}</td><td style="${tdS}">${escHtml(i[1])}</td></tr>`).join('') + `</table>`;
+  h += `<table style="border-collapse:collapse;width:100%;margin:10px 0;"><tr style="background:#1B2A4A;color:#fff;"><th style="${tdS}text-align:left;">Description</th><th style="${tdS}text-align:left;">Unit</th><th style="${tdS}text-align:right;">Rate (${cur})</th><th style="${tdS}text-align:right;">Qty</th><th style="${tdS}text-align:right;">Amount (${cur})</th></tr>`;
+  let text = greet+'\n\n'+open+'\n\n' + info.map(i => i[0]+': '+i[1]).join('\n') + '\n\nCHARGES ('+cur+')\n';
+  S.charges.forEach(sec => {
+    const rows = sec.rows.filter(r => r.on); if(!rows.length) return;
+    h += `<tr><td colspan="5" style="${tdS}background:#E8630A;color:#fff;font-weight:bold;font-size:12px;">${escHtml(sec.sec)}</td></tr>`;
+    text += '\n'+sec.sec+'\n';
+    rows.forEach(r => {
+      const a = num(r.r)*num(r.q), act = /actual/i.test(r.u||'') && !num(r.r);
+      const amt = a ? money(a) : (act ? 'At actuals' : '-');
+      h += `<tr><td style="${tdS}">${escHtml(r.d)}${r.rem?` <span style="color:#6b7280;font-size:11px;">(${escHtml(r.rem)})</span>`:''}</td><td style="${tdS}">${escHtml(r.u)}</td><td style="${tdS}text-align:right;">${num(r.r)?money(num(r.r)):'-'}</td><td style="${tdS}text-align:right;">${num(r.q)||'-'}</td><td style="${tdS}text-align:right;font-weight:bold;">${amt}</td></tr>`;
+      text += `  ${r.d} | ${r.u} | ${num(r.r)?money(num(r.r)):'-'} x ${num(r.q)||'-'} = ${amt}\n`;
+    });
+  });
+  const tot = [['Subtotal', C.sub, false]];
+  if(C.disc>0) tot.push(['Discount', -C.disc, false]);
+  tot.push([`VAT (${Math.round(S.vatRate*10000)/100}%)`, C.vat, false], ['GRAND TOTAL', C.grand, true]);
+  tot.forEach(t => {
+    const v = (t[1]<0?'- ':'')+cur+' '+money(Math.abs(t[1]));
+    h += `<tr><td colspan="4" style="${tdS}text-align:right;font-weight:bold;${t[2]?'background:#E8630A;color:#fff;':'background:#EBF1F8;'}">${t[0]}</td><td style="${tdS}text-align:right;font-weight:bold;${t[2]?'background:#E8630A;color:#fff;':'background:#EBF1F8;'}">${v}</td></tr>`;
+    text += `${t[0]}: ${v}\n`;
+  });
+  h += `</table>`;
+  const notes = gv('f-notes').trim();
+  if(notes){ h += `<p><b>Notes:</b> ${escHtml(notes).replace(/\n/g,'<br>')}</p>`; text += '\nNotes: '+notes+'\n'; }
+  const tcs = S.terms.filter(t => t.on && t.text && t.text.trim());
+  if(tcs.length){
+    h += `<p style="margin-top:12px;"><b>Terms &amp; Conditions</b></p><ol style="font-size:12px;color:#374151;padding-left:20px;">` + tcs.map(t => `<li style="margin-bottom:3px;">${escHtml(t.text)}</li>`).join('') + `</ol>`;
+    text += '\nTERMS & CONDITIONS\n' + tcs.map((t,i) => (i+1)+'. '+t.text).join('\n') + '\n';
+  }
+  h += `<p>${escHtml(close)}</p><p>Best regards,<br>${escHtml(sig).replace(/\n/g,'<br>')}</p></div>`;
+  text += '\n'+close+'\n\nBest regards,\n'+sig+'\n';
+  return {subject, html:h, text, to:gv('f-email')};
+}
+let EMAIL = null;
+async function openEmail(){
+  const miss = missingRates();
+  if(miss && !confirm(miss+' included charge line(s) have no rate. Continue anyway?')) return;
+  EMAIL = buildEmail();
+  $('em-to').textContent = EMAIL.to || '(add client email in step 3)';
+  $('em-subj').textContent = EMAIL.subject;
+  $('em-preview').innerHTML = EMAIL.html;
+  $('email-modal').classList.remove('hidden');
+  await saveQuote(true);
+}
+async function copyEmail(){
+  try{
+    if(window.ClipboardItem){
+      await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([EMAIL.html],{type:'text/html'}), 'text/plain':new Blob([EMAIL.text],{type:'text/plain'})})]);
+    }else{ await navigator.clipboard.writeText(EMAIL.text); }
+    toast('Email copied. Paste it into a new message.');
+  }catch(e){
+    const r = document.createRange(); r.selectNodeContents($('em-preview')); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    try{ document.execCommand('copy'); toast('Email copied. Paste it into a new message.'); }catch(_){ toast('Select the preview and copy it manually.'); }
+  }
+}
+function downloadEml(){
+  const b64 = s => btoa(unescape(encodeURIComponent(s))).replace(/(.{76})/g,'$1\r\n');
+  const eml = ['X-Unsent: 1', 'To: '+(EMAIL.to||''), 'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(EMAIL.subject)))+'?=',
+    'MIME-Version: 1.0', 'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64(EMAIL.html)].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([eml],{type:'message/rfc822'}));
+  a.download = 'Quotation_'+gv('f-quotno')+'.eml'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+function mailtoEmail(){
+  const body = EMAIL.text.length > 1800 ? EMAIL.text.slice(0,1800)+'\n...[truncated: use Copy email for the full quotation]' : EMAIL.text;
+  window.location.href = 'mailto:'+encodeURIComponent(EMAIL.to||'')+'?subject='+encodeURIComponent(EMAIL.subject)+'&body='+encodeURIComponent(body);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+let QUOTES = [];
+async function loadDash(){
+  try{ QUOTES = await DB.list(); }catch(e){ toast(e.message, 5000); QUOTES = []; }
+  renderDash();
+}
+function renderDash(){
+  const by = {};
+  const ym = new Date().toISOString().slice(0,7);
+  QUOTES.forEach(q => {
+    const k = q.created_by_email || 'unknown';
+    (by[k] = by[k] || {email:k, name:q.created_by_name, n:0, month:0, last:'', val:{}});
+    const p = by[k]; p.n++; if(String(q.created_at).slice(0,7)===ym) p.month++;
+    if(String(q.created_at) > p.last) p.last = String(q.created_at);
+    p.val[q.currency] = (p.val[q.currency]||0) + (+q.total||0);
+  });
+  const people = Object.values(by).sort((a,b) => b.n - a.n);
+  const monthN = QUOTES.filter(q => String(q.created_at).slice(0,7)===ym).length;
+  $('dash-stats').innerHTML = [[QUOTES.length,'Total quotations'],[monthN,'This month'],[people.length,'Active salespeople'],[people[0]?people[0].n:0,'Top salesperson ('+(people[0]?(people[0].name||people[0].email):'-')+')']]
+    .map(s => `<div class="stat"><div class="n">${s[0]}</div><div class="l">${escHtml(s[1])}</div></div>`).join('');
+  $('dash-people').innerHTML = '<tr><th>Salesperson</th><th>Email</th><th>Quotes</th><th>This month</th><th>Total value</th><th>Last quote</th></tr>' +
+    (people.map(p => `<tr><td>${escHtml(p.name||fullName(p.email))}</td><td>${escHtml(p.email)}</td><td><b>${p.n}</b></td><td>${p.month}</td><td>${Object.keys(p.val).map(c => c+' '+money(p.val[c])).join('<br>')}</td><td>${p.last?p.last.slice(0,10):''}</td></tr>`).join('') || '<tr><td colspan="6">No quotations yet.</td></tr>');
+  const sel = $('dash-filter'), cur = sel.value;
+  sel.innerHTML = '<option value="">All salespeople</option>' + people.map(p => `<option value="${escHtml(p.email)}">${escHtml(p.name||fullName(p.email))} (${p.n})</option>`).join('');
+  sel.value = cur;
+  renderQuoteTable();
+}
+function filteredQuotes(){
+  const f = $('dash-filter').value, s = gv('dash-search').toLowerCase();
+  return QUOTES.filter(q => (!f || q.created_by_email===f) && (!s || (q.quote_no+' '+q.client_company+' '+q.client_contact).toLowerCase().includes(s)));
+}
+function renderQuoteTable(){
+  const rows = filteredQuotes();
+  $('dash-quotes').innerHTML = '<tr><th>Quote No.</th><th>Date</th><th>Salesperson</th><th>Client</th><th>Service</th><th>Incoterm</th><th>Total</th><th></th></tr>' +
+    (rows.map((q,i) => `<tr><td>${escHtml(q.quote_no)}</td><td>${String(q.created_at).slice(0,10)}</td><td>${escHtml(q.created_by_name||q.created_by_email)}</td><td>${escHtml(q.client_company||'')}</td><td>${escHtml([cap(q.mode),q.direction,q.load_type&&q.load_type!=='ALL'?q.load_type:'',q.cargo_type].filter(Boolean).join(' / '))}</td><td>${escHtml(q.incoterm||'')}</td><td>${escHtml(q.currency)} ${money(+q.total||0)}</td><td><a data-open="${i}">Open</a></td></tr>`).join('') || '<tr><td colspan="8">No quotations match.</td></tr>');
+  $('dash-quotes').querySelectorAll('[data-open]').forEach(a => a.addEventListener('click', () => openQuote(rows[+a.dataset.open])));
+}
+function exportCsv(){
+  const cols = ['quote_no','created_at','created_by_name','created_by_email','mode','direction','load_type','cargo_nature','cargo_type','incoterm','client_company','client_contact','client_email','currency','subtotal','discount','vat','total'];
+  const esc = v => '"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const csv = [cols.join(',')].concat(filteredQuotes().map(q => cols.map(c => esc(q[c])).join(','))).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = 'sasco_quotations.csv'; a.click();
+}
+function showView(v){
+  $('view-quote').classList.toggle('hidden', v!=='quote'); $('gen-bar').classList.toggle('hidden', v!=='quote');
+  $('view-dash').classList.toggle('hidden', v!=='dash');
+  $('nav-quote').classList.toggle('active', v==='quote'); $('nav-dash').classList.toggle('active', v==='dash');
+  if(v==='dash') loadDash();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded',()=>{
-  const today=new Date(), valid=new Date();
-  valid.setDate(today.getDate()+14);
-  document.getElementById('f-date').value  = today.toISOString().slice(0,10);
-  document.getElementById('f-valid').value = valid.toISOString().slice(0,10);
-  document.getElementById('f-quotno').value= `SG-${today.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
-
-  initChips();
-  initListeners();
-  initChargesEvents();
-  updateModeUI();
-  renderCargoFields();
-  loadChargeTemplate();
-  renderCharges();
-  loadTerms();
+document.addEventListener('DOMContentLoaded', () => {
+  $('hdr-company').textContent = (ST.company_name || 'Sasco Global Shipping LLC').toUpperCase();
+  $('hdr-contact').textContent = contactLine();
+  document.title = (ST.company_name || 'Sasco Global Shipping LLC') + ' – Quotation Generator';
+  initChips(); initChargesEvents(); initTermsEvents();
+  updateModeUI(); renderCargoFields();
+  const d = new Date(), v = new Date(); v.setDate(d.getDate() + (parseInt(ST.validity_days)||14));
+  $('f-date').value = todayISO(); $('f-valid').value = v.toISOString().slice(0,10);
+  $('f-currency').value = S.currency; $('f-vat').value = String(S.vatRate);
+  refreshTemplate();
+  $('nav-quote').addEventListener('click', () => showView('quote'));
+  $('nav-dash').addEventListener('click', () => showView('dash'));
+  $('btn-reset').addEventListener('click', () => resetForm(true));
+  $('btn-save').addEventListener('click', () => saveQuote(false));
+  $('btn-pdf').addEventListener('click', generatePDF);
+  $('btn-email').addEventListener('click', openEmail);
+  $('email-close').addEventListener('click', () => $('email-modal').classList.add('hidden'));
+  $('em-copy').addEventListener('click', copyEmail);
+  $('em-eml').addEventListener('click', downloadEml);
+  $('em-mailto').addEventListener('click', mailtoEmail);
+  $('dash-filter').addEventListener('change', renderQuoteTable);
+  $('dash-search').addEventListener('input', renderQuoteTable);
+  $('dash-csv').addEventListener('click', exportCsv);
+  $('dash-refresh').addEventListener('click', loadDash);
+  initGate();
+  if(!S.user) $('f-quotno').value = quotePrefix() + '0001';
+  $('mode-banner').classList.toggle('hidden', DB.cloud());
 });
 </script>
 </body>
