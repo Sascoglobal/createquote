@@ -473,8 +473,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
 // CONFIG  – fill these two lines to turn on the shared database
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
-  SUPABASE_URL: '',       // e.g. https://abcdxyz.supabase.co
-  SUPABASE_ANON_KEY: '',  // Project Settings > API > anon public key
+  SUPABASE_URL:  'https://emlecimzeyvjyetsqmwp.supabase.co',       // e.g. https://abcdxyz.supabase.co
+  SUPABASE_ANON_KEY: 'sb_publishable_PkeiGzG3mRdDS1uAoTdq2Q_fypM6ZIO',  // Project Settings > API > anon public key
   ALLOWED_DOMAIN: 'sascoglobal.com',
 };
 
@@ -581,7 +581,7 @@ function initGate(){
 const LS_KEY = 'sasco_quotes_v1';
 const DB = {
   cloud(){ return !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY); },
-  hdr(extra){ return Object.assign({apikey:CONFIG.SUPABASE_ANON_KEY, Authorization:'Bearer '+CONFIG.SUPABASE_ANON_KEY, 'Content-Type':'application/json'}, extra||{}); },
+  hdr(extra){ const k = CONFIG.SUPABASE_ANON_KEY, h = {apikey:k, 'Content-Type':'application/json'}; if(!/^sb_/.test(k)) h.Authorization = 'Bearer '+k; return Object.assign(h, extra||{}); },
   localAll(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; } },
   localSet(a){ try{ localStorage.setItem(LS_KEY, JSON.stringify(a)); }catch(e){} },
   async count(){
