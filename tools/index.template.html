@@ -172,6 +172,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
 .allin-row input[type=text]{flex:1;min-width:220px;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;}
 .allin-prev{margin-top:8px;font-size:12.5px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:8px 10px;}
 .sec-row a{color:#fff;opacity:.85;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer;text-decoration:underline;margin-left:10px;font-size:10.5px;}
+.cur-sel{border:1.5px solid var(--border);border-radius:6px;padding:4px 2px;font-size:12px;background:#fff;width:100%;}
 </style>
 </head>
 <body>
@@ -326,7 +327,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
         <label>Quote currency:</label><select id="f-currency"></select>
         <label>Transfer charge %:</label><input type="number" id="fx-fee" min="0" step="0.01" placeholder="0">
         <button class="sec-btn" id="fx-reset" type="button">Reset to defaults</button>
-        <span class="hint" style="margin-left:auto;">Every rate and amount prints in the quote currency only. The transfer charge is added when a line's cost currency differs.</span>
+        <span class="hint" style="margin-left:auto;">The quote currency drives the totals. Any line can be billed in another currency (see "Bill in" on each row) and prints in that currency; totals are converted internally. The transfer charge is added when a line's cost currency differs from its billing currency.</span>
       </div>
       <div class="fx-grid" id="fx-rates"></div>
       <div class="fx-warn hidden" id="fx-warn"></div>
@@ -362,6 +363,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
               <th class="c" style="width:34px;">Incl.</th>
               <th style="min-width:210px;">Description of Charges</th>
               <th style="width:110px;">Unit</th>
+              <th style="width:64px;">Bill in</th>
               <th style="width:92px;" class="r" id="th-rate">Rate</th>
               <th style="width:70px;" class="r">Qty / Wt</th>
               <th style="width:100px;" class="r" id="th-amt">Amount</th>
@@ -690,27 +692,32 @@ function round2(x){ return Math.round((x + Number.EPSILON)*100)/100; }
 function defFx(){ const f = DATA.fx || {}; return {rates:Object.assign({AED:1}, f.rates||{}), fee:(typeof f.fee==='number'?f.fee:0)}; }
 function defAllin(){ return {on:false, label:'All-in Freight & Charges', cats:{FREIGHT:true, ORIGIN:true, DESTINATION:true}}; }
 function fxRate(c){ const v = S.fx.rates[c]; return (typeof v==='number' && v>0) ? v : null; }
-function fxFactor(from, to){
+function fxFactor(from, to, noFee){
   if(!from || from===to) return 1;
   const a = fxRate(from), b = fxRate(to);
   if(a==null || b==null) return null;
-  return a/b*(1+(S.fx.fee||0));
+  return a/b*(noFee ? 1 : (1+(S.fx.fee||0)));
 }
+// Each row is billed in its own currency (r.bill, default = quote currency). Totals are converted internally to the quote currency.
+function billCcy(r){ return r.pct ? S.currency : (r.bill || S.currency); }
 function rowCalc(r){
-  if(r.pct){ const rt = num(r.r); return {rate:rt, amt:round2(rt*num(r.q)), miss:false}; }
-  if(r.r==='' || r.r==null) return {rate:0, amt:0, miss:false};
-  const f = fxFactor(r.ccy || S.currency, S.currency);
-  if(f==null) return {rate:0, amt:0, miss:true};
-  const rate = round2(num(r.r)*f);
-  return {rate, amt:round2(rate*num(r.q)), miss:false};
+  const bc = billCcy(r);
+  if(r.pct){ const rt = num(r.r); const a = round2(rt*num(r.q)); return {rate:rt, amt:a, amtQ:a, ccy:bc, miss:false}; }
+  if(r.r==='' || r.r==null) return {rate:0, amt:0, amtQ:0, ccy:bc, miss:false};
+  const f = fxFactor(r.ccy || bc, bc);          // cost currency -> billing currency (transfer charge applies here)
+  const g = fxFactor(bc, S.currency, true);     // billing currency -> quote currency, for totals only
+  if(f==null || g==null) return {rate:0, amt:0, amtQ:0, ccy:bc, miss:true};
+  const rate = round2(num(r.r)*f), amt = round2(rate*num(r.q));
+  return {rate, amt, amtQ:round2(amt*g), ccy:bc, miss:false};
 }
 function missingFx(){
   const out = new Set();
   if(fxRate(S.currency)==null) out.add(S.currency);
   S.charges.forEach(s => s.rows.forEach(r => {
     if(!r.on || r.pct || r.r==='' || r.r==null) return;
-    const c = r.ccy || S.currency;
-    if(c!==S.currency && fxRate(c)==null) out.add(c);
+    const c = r.ccy || billCcy(r), bc = billCcy(r);
+    if(c!==bc && fxRate(c)==null) out.add(c);
+    if(bc!==S.currency && fxRate(bc)==null) out.add(bc);
   }));
   return [...out];
 }
@@ -754,7 +761,7 @@ function calc(){
   let sub = 0, vatBase = 0;
   S.charges.forEach(s => s.rows.forEach(r => {
     if(!r.on) return;
-    const a = rowCalc(r).amt; sub += a; if(r.vat) vatBase += a;
+    const a = rowCalc(r).amtQ; sub += a; if(r.vat) vatBase += a;
   }));
   sub = round2(sub);
   let disc = S.disc.type==='pct' ? sub*num(S.disc.val)/100 : num(S.disc.val);
@@ -774,16 +781,16 @@ function outputLines(){
   const A = S.allin || defAllin(), lines = []; let note = '';
   const inAll = r => A.on && !!A.cats[r.cat||'OTHER'];
   if(A.on){
-    const grp = rows.filter(inAll), priced = grp.filter(r => rowCalc(r).amt > 0), un = grp.filter(r => !(rowCalc(r).amt > 0));
+    const grp = rows.filter(inAll), priced = grp.filter(r => rowCalc(r).amtQ > 0), un = grp.filter(r => !(rowCalc(r).amtQ > 0));
     if(priced.length){
-      const tot = round2(priced.reduce((a,r) => a + rowCalc(r).amt, 0)), nv = priced.filter(r => r.vat).length;
-      lines.push({d:A.label||'All-in Charges', u:'Lump sum', rate:0, q:0, amt:tot, vat:(nv===priced.length?'Y':nv===0?'-':'Part'), rem:'', allin:true});
+      const tot = round2(priced.reduce((a,r) => a + rowCalc(r).amtQ, 0)), nv = priced.filter(r => r.vat).length;
+      lines.push({d:A.label||'All-in Charges', u:'Lump sum', rate:0, q:0, amt:tot, ccy:S.currency, rem:'', allin:true});
     }
     if(un.length) note = 'Not included in the all-in price (charged at actuals / on request): ' + un.map(r => r.d).join('; ') + '.';
   }
   rows.filter(r => !inAll(r)).forEach(r => {
     const c = rowCalc(r);
-    lines.push({d:r.d, u:r.u, rate:c.rate, q:num(r.q), amt:c.amt, vat:r.vat?'Y':'-', rem:r.rem||'', pct:r.pct, act:/actual/i.test(r.u||'') && !c.rate});
+    lines.push({d:r.d, u:r.u, rate:c.rate, q:num(r.q), amt:c.amt, ccy:c.ccy, rem:r.rem||'', pct:r.pct, act:/actual/i.test(r.u||'') && !c.rate});
   });
   return {lines, note};
 }
@@ -813,7 +820,7 @@ function renderAllinOpts(){
 function renderCharges(){
   let html = '', n = 1;
   S.charges.forEach((sec, si) => {
-    html += `<tr class="sec-row"><td colspan="9">▸ &nbsp;${escHtml(sec.sec)} <a data-action="sec-all" data-si="${si}">all</a><a data-action="sec-none" data-si="${si}">none</a></td><td style="text-align:right;"><button class="del-btn" data-action="del-sec" data-si="${si}" title="Remove section">✕</button></td></tr>`;
+    html += `<tr class="sec-row"><td colspan="10">▸ &nbsp;${escHtml(sec.sec)} <a data-action="sec-all" data-si="${si}">all</a><a data-action="sec-none" data-si="${si}">none</a></td><td style="text-align:right;"><button class="del-btn" data-action="del-sec" data-si="${si}" title="Remove section">✕</button></td></tr>`;
     sec.rows.forEach((row, ri) => {
       const c = rowCalc(row);
       const rv = row.r==='' ? '' : (row.pct ? Math.round(num(row.r)*10000)/100 : c.rate);
@@ -822,6 +829,7 @@ function renderCharges(){
         <td class="ctr"><input type="checkbox" data-si="${si}" data-ri="${ri}" data-key="on" ${row.on?'checked':''}></td>
         <td><input type="text" value="${escHtml(row.d)}" data-si="${si}" data-ri="${ri}" data-key="d"></td>
         <td><input type="text" value="${escHtml(row.u)}" data-si="${si}" data-ri="${ri}" data-key="u"></td>
+        <td>${row.pct ? '<span style="color:#6b7280;font-size:11px;">'+S.currency+'</span>' : curSel(row, si, ri)}</td>
         <td><input type="number" value="${rv}" placeholder="${row.pct?'0.00 %':'0.00'}" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="r" class="${row.locked?'locked':''}" ${row.locked?'readonly title="Fixed rate"':''} style="text-align:right;"></td>
         <td><input type="number" value="${row.q===''?'':row.q}" placeholder="0" min="0" step="0.01" data-si="${si}" data-ri="${ri}" data-key="q" style="text-align:right;" ${row.pct?'title="Cargo value in the quote currency"':''}></td>
         <td class="amt" id="amt-${si}-${ri}">${amtCell(row)}</td>
@@ -835,14 +843,19 @@ function renderCharges(){
   renderAllinOpts();
   updateTotals();
 }
+function curSel(row, si, ri){
+  const keys = Object.keys(S.fx.rates); if(!keys.includes(S.currency)) keys.push(S.currency);
+  const cur = billCcy(row);
+  return `<select data-si="${si}" data-ri="${ri}" data-key="bill" class="cur-sel">${keys.map(c => `<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('')}</select>`;
+}
 function amtCell(row){
   const c = rowCalc(row);
-  return (c.miss ? '<span style="color:#dc2626;" title="No exchange rate for '+escHtml(row.ccy||'')+'">⚠ FX</span>' : (c.amt ? money(c.amt) : '<span style="color:#aaa;">—</span>')) + (row.locked?' <span class="lock">🔒</span>':'');
+  return (c.miss ? '<span style="color:#dc2626;" title="No exchange rate for '+escHtml(row.ccy||'')+'">⚠ FX</span>' : (c.amt ? (c.ccy!==S.currency ? '<span style="color:#6b7280;font-size:10.5px;">'+c.ccy+'</span> ' : '')+money(c.amt) : '<span style="color:#aaa;">—</span>')) + (row.locked?' <span class="lock">🔒</span>':'');
 }
 
 function updateTotals(){
   const c = calc(), cur = S.currency, f = v => cur+' '+money(v);
-  $('th-rate').textContent = 'Rate ('+cur+')'; $('th-amt').textContent = 'Amount ('+cur+')';
+  $('th-rate').textContent = 'Rate'; $('th-amt').textContent = 'Amount';
   $('tot-sub').textContent = f(c.sub);
   $('tot-disc').textContent = c.disc ? '− '+f(c.disc) : f(0);
   $('tot-net').textContent = f(c.net);
@@ -871,7 +884,12 @@ function initChargesEvents(){
     } else if(key==='r'){
       if(el.value==='') row.r = '';
       else if(row.pct) row.r = parseFloat(el.value)/100;
-      else { row.r = parseFloat(el.value); row.ccy = S.currency; }
+      else { row.r = parseFloat(el.value); row.ccy = billCcy(row); }
+    } else if(key==='bill'){
+      // switching a row's billing currency keeps the same price, converted
+      const before = rowCalc(row); row.bill = (el.value===S.currency ? '' : el.value);
+      if(!row.pct && row.r!=='' && !row.locked){ row.r = before.rate ? round2(before.rate*(fxFactor(before.ccy, billCcy(row), true)||1)) : row.r; row.ccy = billCcy(row); }
+      renderCharges(); return;
     } else row[key] = el.value;
     if(key==='r' || key==='q' || key==='on' || key==='vat'){
       const cell = $(`amt-${si}-${ri}`); if(cell) cell.innerHTML = amtCell(row);
@@ -888,7 +906,7 @@ function initChargesEvents(){
     else S.charges.splice(si,1);
     renderCharges();
   });
-  const blank = () => ({d:'', u:'Per Shipment', ccy:S.currency, pct:false, r:'', q:1, rem:'', rc:'Editable', on:true, vat:true, locked:false, cat:'OTHER'});
+  const blank = () => ({d:'', u:'Per Shipment', ccy:S.currency, bill:'', pct:false, r:'', q:1, rem:'', rc:'Editable', on:true, vat:true, locked:false, cat:'OTHER'});
   $('btn-add-row').addEventListener('click', () => {
     if(!S.charges.length) S.charges.push({sec:'ADDITIONAL CHARGES', cat:'OTHER', rows:[]});
     S.charges[S.charges.length-1].rows.push(blank());
@@ -1079,7 +1097,7 @@ function openQuote(rec){
   $('disc-type').value = S.disc.type; $('disc-val').value = S.disc.val;
   $('inco-desc').textContent = INCO_DESC[S.inco]||'';
   S.charges = p.charges||[]; S.terms = p.terms||[];
-  S.charges.forEach(s => { s.cat = s.cat||'OTHER'; s.rows.forEach(r => { r.cat = r.cat||s.cat||'OTHER'; r.ccy = r.ccy||S.currency; }); });
+  S.charges.forEach(s => { s.cat = s.cat||'OTHER'; s.rows.forEach(r => { r.cat = r.cat||s.cat||'OTHER'; r.ccy = r.ccy||S.currency; r.bill = r.bill||''; }); });
   S.persisted = true; S.createdBy = rec.created_by_email;
   renderCharges(); renderTerms(); showView('quote'); setSaveState('Opened '+rec.quote_no);
 }
@@ -1188,21 +1206,22 @@ function buildPdf(scale, multi){
   // charges table
   const body = [];
   const OL = outputLines();
+  const cm = (l, v) => (l.ccy||cur)+' '+money(v);
   OL.lines.forEach((l, i) => {
-    body.push([i+1, pdfSafe(l.d), pdfSafe(l.u), l.allin ? '-' : rateStr(l), l.q ? String(l.q) : '-',
-      l.amt ? money(l.amt) : (l.act ? 'At actuals' : '-'), l.vat, pdfSafe(l.rem)]);
+    body.push([i+1, pdfSafe(l.d), pdfSafe(l.u), l.allin ? '-' : (l.rate ? (l.pct ? rateStr(l) : cm(l,l.rate)) : '-'), l.q ? String(l.q) : '-',
+      pdfSafe(l.rem), l.amt ? cm(l,l.amt) : (l.act ? 'At actuals' : '-')]);
   });
-  if(OL.note) body.push([{content:pdfSafe(OL.note), colSpan:8, styles:{fontStyle:'italic', textColor:[90,90,90], fillColor:WHITE}}]);
+  if(OL.note) body.push([{content:pdfSafe(OL.note), colSpan:7, styles:{fontStyle:'italic', textColor:[90,90,90], fillColor:WHITE}}]);
   const tfs = Math.max(6.1, 7.8*scale), pad = Math.max(0.55, 1.35*scale);
   if(body.length){
     doc.autoTable({
       startY:y, margin:{left:ml,right:mr,top:16,bottom:FOOT+2}, theme:'grid',
-      head:[['#','Description of Charges','Unit','Rate ('+cur+')','Qty','Amount ('+cur+')','VAT','Remarks']],
+      head:[['#','Description of Charges','Unit','Rate','Qty','Remarks','Amount']],
       body,
       styles:{font:'helvetica', fontSize:tfs, cellPadding:{top:pad,bottom:pad,left:1.4,right:1.4}, lineColor:[215,222,232], lineWidth:0.1, textColor:[30,30,30], overflow:'linebreak'},
       headStyles:{fillColor:NAVY, textColor:WHITE, fontStyle:'bold', halign:'center'},
       alternateRowStyles:{fillColor:ALT},
-      columnStyles:{0:{halign:'center',cellWidth:6},1:{cellWidth:62},2:{cellWidth:24},3:{halign:'right',cellWidth:19},4:{halign:'right',cellWidth:11},5:{halign:'right',cellWidth:23,fontStyle:'bold'},6:{halign:'center',cellWidth:9},7:{cellWidth:'auto'}},
+      columnStyles:{0:{halign:'center',cellWidth:6},1:{cellWidth:'auto'},2:{cellWidth:24},3:{halign:'right',cellWidth:24},4:{halign:'right',cellWidth:10},5:{cellWidth:30},6:{halign:'right',cellWidth:28,fontStyle:'bold'}},
       didDrawPage: d => { if(d.pageNumber>1) header(false); },
     });
     y = doc.lastAutoTable.finalY + 2.5;
@@ -1337,34 +1356,39 @@ function buildEmail(){
     [S.mode==='air'?'Airport of Destination':'Destination', gv('f-pod')], ['Final Delivery', gv('f-delivery')],
     ['Commodity', gv('f-commodity')], ['Valid Until', gv('f-valid')],
   ].filter(x => x[1]);
-  const tdS = 'padding:5px 8px;border:1px solid #d7dee8;font-size:13px;';
-  let h = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a202c;max-width:760px;">`;
-  h += `<p>${escHtml(greet)}</p><p>${escHtml(open)}</p>`;
-  h += `<table style="border-collapse:collapse;margin:10px 0;">` + info.map(i => `<tr><td style="${tdS}background:#EBF1F8;font-weight:bold;">${escHtml(i[0])}</td><td style="${tdS}">${escHtml(i[1])}</td></tr>`).join('') + `</table>`;
-  h += `<table style="border-collapse:collapse;width:100%;margin:10px 0;"><tr style="background:#1B2A4A;color:#fff;"><th style="${tdS}text-align:left;">Description</th><th style="${tdS}text-align:left;">Unit</th><th style="${tdS}text-align:right;">Rate (${cur})</th><th style="${tdS}text-align:right;">Qty</th><th style="${tdS}text-align:right;">Amount (${cur})</th></tr>`;
-  let text = greet+'\n\n'+open+'\n\n' + info.map(i => i[0]+': '+i[1]).join('\n') + '\n\nCHARGES ('+cur+')\n';
+  // Plain, paste-safe layout: one line per item ("Description: CUR amount"). No tables, so Outlook/Gmail keep it tidy.
+  const P = 'margin:0 0 3px 0;';
+  const line = (l, v, b) => `<p style="${P}">${escHtml(l)}: ${b?'<b>':''}${escHtml(v)}${b?'</b>':''}</p>`;
+  let h = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a202c;">`;
+  h += `<p style="margin:0 0 10px 0;">${escHtml(greet)}</p><p style="margin:0 0 10px 0;">${escHtml(open)}</p>`;
+  let text = greet+'\n\n'+open+'\n\n';
+  info.forEach(i => { h += line(i[0], i[1], false); text += i[0]+': '+i[1]+'\n'; });
+  h += `<p style="margin:12px 0 4px 0;"><b>Charges</b></p>`; text += '\nCHARGES\n';
   const OL = outputLines();
   OL.lines.forEach(r => {
-    const amt = r.amt ? money(r.amt) : (r.act ? 'At actuals' : '-');
-    const rs = r.allin ? '-' : rateStr(r);
-    h += `<tr><td style="${tdS}">${escHtml(r.d)}${r.rem?` <span style="color:#6b7280;font-size:11px;">(${escHtml(r.rem)})</span>`:''}</td><td style="${tdS}">${escHtml(r.u)}</td><td style="${tdS}text-align:right;">${rs}</td><td style="${tdS}text-align:right;">${r.q||'-'}</td><td style="${tdS}text-align:right;font-weight:bold;">${amt}</td></tr>`;
-    text += `${r.d} | ${r.u} | ${rs} x ${r.q||'-'} = ${amt}\n`;
+    const cc = r.ccy || cur;
+    const amt = r.amt ? cc+' '+money(r.amt) : (r.act ? 'At actuals' : '-');
+    let d = r.d;
+    if(!r.allin && !r.pct && r.q && r.q!==1 && r.rate) d += ' ('+r.q+' x '+cc+' '+money(r.rate)+')';
+    if(r.pct && r.rate) d += ' ('+rateStr(r)+')';
+    if(r.rem) d += ' - '+r.rem;
+    h += line(d, amt, true); text += d+': '+amt+'\n';
   });
-  if(OL.note){ h += `<tr><td colspan="5" style="${tdS}font-style:italic;color:#6b7280;font-size:12px;">${escHtml(OL.note)}</td></tr>`; text += OL.note+'\n'; }
-  const tot = [['Subtotal', C.sub, false]];
-  if(C.disc>0) tot.push(['Discount', -C.disc, false]);
-  tot.push([`VAT (${Math.round(S.vatRate*10000)/100}%)`, C.vat, false], ['GRAND TOTAL', C.grand, true]);
-  tot.forEach(t => {
-    const v = (t[1]<0?'- ':'')+cur+' '+money(Math.abs(t[1]));
-    h += `<tr><td colspan="4" style="${tdS}text-align:right;font-weight:bold;${t[2]?'background:#E8630A;color:#fff;':'background:#EBF1F8;'}">${t[0]}</td><td style="${tdS}text-align:right;font-weight:bold;${t[2]?'background:#E8630A;color:#fff;':'background:#EBF1F8;'}">${v}</td></tr>`;
+  if(OL.note){ h += `<p style="${P}font-style:italic;color:#6b7280;font-size:12px;">${escHtml(OL.note)}</p>`; text += OL.note+'\n'; }
+  h += `<p style="margin:10px 0 3px 0;">&nbsp;</p>`; text += '\n';
+  const tot = [['Subtotal', C.sub]];
+  if(C.disc>0) tot.push(['Discount', -C.disc]);
+  tot.push([`VAT (${Math.round(S.vatRate*10000)/100}%)`, C.vat], ['TOTAL', C.grand]);
+  tot.forEach((t,i) => {
+    const v = (t[1]<0?'- ':'')+cur+' '+money(Math.abs(t[1])), last = i===tot.length-1;
+    h += `<p style="${P}${last?'font-size:14px;':''}">${last?'<b>':''}${t[0]}: ${last?'':'<b>'}${v}</b></p>`;
     text += `${t[0]}: ${v}\n`;
   });
-  h += `</table>`;
   const notes = gv('f-notes').trim();
-  if(notes){ h += `<p><b>Notes:</b> ${escHtml(notes).replace(/\n/g,'<br>')}</p>`; text += '\nNotes: '+notes+'\n'; }
+  if(notes){ h += `<p style="margin:10px 0 0 0;"><b>Notes:</b> ${escHtml(notes).replace(/\n/g,'<br>')}</p>`; text += '\nNotes: '+notes+'\n'; }
   const tcs = S.terms.filter(t => t.on && t.text && t.text.trim());
   if(tcs.length){
-    h += `<p style="margin-top:12px;"><b>Terms &amp; Conditions</b></p><ol style="font-size:12px;color:#374151;padding-left:20px;">` + tcs.map(t => `<li style="margin-bottom:3px;">${escHtml(t.text)}</li>`).join('') + `</ol>`;
+    h += `<p style="margin:12px 0 4px 0;"><b>Terms &amp; Conditions</b></p>` + tcs.map((t,i) => `<p style="${P}font-size:12px;color:#374151;">${i+1}. ${escHtml(t.text)}</p>`).join('');
     text += '\nTERMS & CONDITIONS\n' + tcs.map((t,i) => (i+1)+'. '+t.text).join('\n') + '\n';
   }
   h += `<p>${escHtml(close)}</p><p>Best regards,<br>${escHtml(sig).replace(/\n/g,'<br>')}</p></div>`;
