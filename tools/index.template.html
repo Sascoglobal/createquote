@@ -9,8 +9,8 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#1B2A4A;--navy2:#2E4D8B;--blue:#4472C4;
-  --orange:#E8630A;--orange-lt:#FDEBD0;--alt:#EBF1F8;
+  --navy:#018bce;--navy2:#0172a8;--blue:#018bce;--on-orange:#0b3b55;
+  --orange:#eef5f1;--orange-lt:#f6faf8;--alt:#EBF1F8;
   --gold:#F5C518;--white:#fff;--text:#1a202c;
   --muted:#6b7280;--border:#d1d5db;--bg:#f0f4f8;
   --green:#16a34a;--red:#dc2626;
@@ -173,6 +173,21 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
 .allin-prev{margin-top:8px;font-size:12.5px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:8px 10px;}
 .sec-row a{color:#fff;opacity:.85;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer;text-decoration:underline;margin-left:10px;font-size:10.5px;}
 .cur-sel{border:1.5px solid var(--border);border-radius:6px;padding:4px 2px;font-size:12px;background:#fff;width:100%;}
+/* colour overrides: accent #eef5f1 is light, so text on it is dark */
+.logo-sq{color:var(--on-orange);}
+.nav-btn.active{color:var(--on-orange);}
+.step-num{color:var(--on-orange)!important;}
+.ctbl .sec-row td{color:var(--on-orange)!important;}
+.sec-row a{color:var(--navy2)!important;}
+.gen-bar{border-top:2px solid var(--navy);}
+.gen-btn{color:var(--on-orange);border:1.5px solid var(--navy);}
+.gate-box button{color:var(--on-orange)!important;border:1.5px solid var(--navy)!important;}
+.tot-row.vat{background:var(--orange-lt);}
+.hdr-logo{height:44px;width:auto;background:#fff;border-radius:8px;padding:3px 6px;display:block;}
+.dash-err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px;}
+.fx-tbl input{border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;width:130px;text-align:right;}
+.fx-tbl td,.fx-tbl th{padding:7px 10px;}
+.brand-txt p{color:#e8f6ff!important;}
 </style>
 </head>
 <body>
@@ -184,6 +199,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
     <h2>Sasco Quotation Generator</h2>
     <p>Enter your company email to continue.<br>Access is limited to @sascoglobal.com addresses.</p>
     <input type="email" id="gate-email" placeholder="name@sascoglobal.com" autocomplete="email">
+    <div class="hidden" id="gate-name-wrap"><input type="text" id="gate-name" placeholder="Your full name (as it should appear on quotes)" autocomplete="name" style="margin-top:8px;"></div>
     <div class="gate-err" id="gate-err"></div>
     <button id="gate-btn">Continue</button>
   </div>
@@ -201,6 +217,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
     <div class="nav">
       <button class="nav-btn active" id="nav-quote">📄 New Quote</button>
       <button class="nav-btn" id="nav-dash">📊 Dashboard</button>
+      <button class="nav-btn" id="nav-fx">💱 Currency</button>
       <span class="user-chip"><span id="user-lbl"></span><a id="switch-user">Switch</a></span>
     </div>
   </div>
@@ -220,6 +237,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
             <button class="chip active" data-val="sea">🚢 Sea</button>
             <button class="chip" data-val="air">✈️ Air</button>
             <button class="chip" data-val="land">🚛 Land</button>
+            <button class="chip" data-val="courier">📦 Courier</button>
             <button class="chip" data-val="warehouse">🏭 Warehousing</button>
           </div>
         </div>
@@ -325,11 +343,10 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
     <div class="card-body">
       <div class="cur-bar">
         <label>Quote currency:</label><select id="f-currency"></select>
-        <label>Transfer charge %:</label><input type="number" id="fx-fee" min="0" step="0.01" placeholder="0">
-        <button class="sec-btn" id="fx-reset" type="button">Reset to defaults</button>
-        <span class="hint" style="margin-left:auto;">The quote currency drives the totals. Any line can be billed in another currency (see "Bill in" on each row) and prints in that currency; totals are converted internally. The transfer charge is added when a line's cost currency differs from its billing currency.</span>
+        <button class="sec-btn" id="fx-reset" type="button">Use latest company rates</button>
+        <span class="hint" style="margin-left:auto;">Totals are in the quote currency. Any line can be billed in another currency ("Bill in"). Rates are set company-wide in the Currency tab.</span>
       </div>
-      <div class="fx-grid" id="fx-rates"></div>
+      <div class="hint" id="fx-summary" style="margin:4px 0;"></div>
       <div class="fx-warn hidden" id="fx-warn"></div>
     </div>
   </div>
@@ -376,10 +393,13 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
         </table>
       </div>
       <div class="add-area">
+        <label class="hint" for="add-sec-sel">Add to section:</label>
+        <select id="add-sec-sel" class="cur-sel" style="width:auto;padding:6px 8px;">
+          <option value="FREIGHT">Freight</option><option value="ORIGIN">Origin</option><option value="DESTINATION">Destination</option>
+          <option value="CUSTOMS">Customs</option><option value="DELIVERY">Delivery</option><option value="INSURANCE">Insurance</option>
+          <option value="WAREHOUSE">Warehouse</option><option value="OTHER">Other</option>
+        </select>
         <button class="add-btn" id="btn-add-row">＋ Add Charge Line</button>
-        <span class="hint">|</span>
-        <input type="text" class="sec-name-inp" id="new-sec-name" placeholder="New section name…">
-        <button class="add-sec-confirm" id="btn-add-sec">＋ Add Section</button>
       </div>
       <div class="totals-wrap">
         <div class="totals-box">
@@ -432,7 +452,33 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
 </div>
 
 <!-- ============== DASHBOARD VIEW ============== -->
+<div class="main hidden" id="view-fx">
+  <div class="card">
+    <div class="card-hdr"><h2>Currency &amp; Conversion (company-wide)</h2></div>
+    <div class="card-body">
+      <p class="hint" id="fx-meta" style="margin-bottom:10px;"></p>
+      <div class="tbl-wrap"><table class="dtbl fx-tbl" id="fx-table"></table></div>
+      <div class="allin-row" style="margin-top:12px;"><b>Transfer charge (%)</b>
+        <span id="fx-fee-box"></span>
+        <span class="hint">Added when a line's cost currency differs from the currency it is billed in.</span></div>
+      <div id="fx-admin" class="hidden" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+        <div class="allin-row">
+          <input type="text" id="fx-new-code" placeholder="New currency code, e.g. SAR" maxlength="4" style="max-width:200px;flex:none;text-transform:uppercase;">
+          <input type="number" id="fx-new-rate" placeholder="AED per 1 unit" step="0.0001" min="0" style="max-width:160px;flex:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;">
+          <button class="sec-btn" id="fx-add" type="button">Add currency</button>
+        </div>
+        <div class="allin-row" style="margin-top:10px;">
+          <input type="password" id="fx-pin" placeholder="Admin PIN" autocomplete="off" style="max-width:220px;flex:none;">
+          <button class="gen-btn" id="fx-save" type="button" style="padding:9px 22px;font-size:13px;">Save rates for everyone</button>
+          <span class="hint" id="fx-save-msg"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="main hidden" id="view-dash">
+  <div class="dash-err hidden" id="dash-err"></div>
   <div class="stat-row" id="dash-stats"></div>
   <div class="card">
     <div class="card-hdr"><h2>Quotes by salesperson</h2></div>
@@ -470,12 +516,14 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:12.5px;}
 
 <script>
 // ═══════════════════════════════════════════════════════════════
+const LOGO = '/*__LOGO__*/', LOGO_RATIO = /*__LOGORATIO__*/1;
 // CONFIG  – fill these two lines to turn on the shared database
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
   SUPABASE_URL:  'https://emlecimzeyvjyetsqmwp.supabase.co',       // e.g. https://abcdxyz.supabase.co
   SUPABASE_ANON_KEY: 'sb_publishable_PkeiGzG3mRdDS1uAoTdq2Q_fypM6ZIO',  // Project Settings > API > anon public key
   ALLOWED_DOMAIN: 'sascoglobal.com',
+  FX_ADMIN: 'nikhil@sascoglobal.com',   // only this person sees the edit controls in the Currency tab
 };
 
 // Template data (generated from Sasco_Quote_Templates.xlsx by xlsx_to_data.py)
@@ -521,7 +569,7 @@ function loadLabel(){
   if(S.mode==='land') return S.cnt==='fcl'?'FTL':'LTL';
   return 'ALL';
 }
-function modeLabel(){ return {sea:'Sea',air:'Air',land:'Land',warehouse:'Warehousing'}[S.mode]; }
+function modeLabel(){ return {sea:'Sea',air:'Air',land:'Land',courier:'Courier',warehouse:'Warehousing'}[S.mode]; }
 function routeLabel(){
   const d = S.mode==='warehouse' ? '' : (S.dir==='import'?'Import':'Export');
   const l = (S.mode==='sea'||S.mode==='land') ? loadLabel() : '';
@@ -529,8 +577,10 @@ function routeLabel(){
 }
 function ctypeLabel(){ return S.ctype==='Other' && gv('f-ctype-other') ? 'Other – '+gv('f-ctype-other') : S.ctype; }
 function fullName(email){
+  email = (email||'').trim().toLowerCase();
   const t = (DATA.team||[]).find(x => x.email === email);
   if(t && t.name) return t.name;
+  try{ const n = localStorage.getItem('sasco_name_'+email); if(n) return n; }catch(e){}
   return email.split('@')[0].split(/[._-]+/).map(cap).join(' ');
 }
 
@@ -552,7 +602,7 @@ function enterApp(email){
   try{ localStorage.setItem('sasco_user', S.user); }catch(e){}
   $('gate').classList.add('hidden');
   $('user-lbl').textContent = S.user;
-  if(!gv('f-prepby')) $('f-prepby').value = fullName(S.user);
+  $('f-prepby').value = fullName(S.user);
   $('mode-banner').classList.toggle('hidden', DB.cloud());
   refreshQuoteNo();
   return true;
@@ -565,6 +615,11 @@ function initGate(){
     const v = gv('gate-email');
     if(!validEmail(v)){ $('gate-err').textContent = 'Please use your @'+CONFIG.ALLOWED_DOMAIN+' email address.'; return; }
     $('gate-err').textContent = '';
+    if(!teamOf(v)){
+      const nm = gv('gate-name').trim();
+      if(!nm){ $('gate-name-wrap').classList.remove('hidden'); $('gate-err').textContent = 'This email is not in the team list. Enter your full name to continue.'; return; }
+      try{ localStorage.setItem('sasco_name_'+v.trim().toLowerCase(), nm); }catch(e){}
+    }
     enterApp(v);
   };
   $('gate-btn').addEventListener('click', go);
@@ -584,6 +639,15 @@ const DB = {
   hdr(extra){ const k = CONFIG.SUPABASE_ANON_KEY, h = {apikey:k, 'Content-Type':'application/json'}; if(!/^sb_/.test(k)) h.Authorization = 'Bearer '+k; return Object.assign(h, extra||{}); },
   localAll(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; } },
   localSet(a){ try{ localStorage.setItem(LS_KEY, JSON.stringify(a)); }catch(e){} },
+  async fxGet(){
+    const r = await fetch(CONFIG.SUPABASE_URL+'/rest/v1/fx_settings?id=eq.1&select=*', {headers:this.hdr()});
+    if(!r.ok) throw new Error('read failed ('+r.status+')');
+    return (await r.json())[0] || null;
+  },
+  async fxSave(pin, rates, fee, by){
+    const r = await fetch(CONFIG.SUPABASE_URL+'/rest/v1/rpc/save_fx', {method:'POST', headers:this.hdr(), body:JSON.stringify({p_pin:pin, p_rates:rates, p_fee:fee, p_by:by})});
+    if(!r.ok){ let m = ''; try{ m = (await r.json()).message; }catch(e){} throw new Error(m || ('save failed ('+r.status+')')); }
+  },
   async count(){
     if(!this.cloud()) return this.localAll().length;
     const r = await fetch(CONFIG.SUPABASE_URL+'/rest/v1/quotes?select=id&limit=1', {headers:this.hdr({Prefer:'count=exact'})});
@@ -631,6 +695,20 @@ async function refreshQuoteNo(){
   setSaveState('');
 }
 function setSaveState(t){ $('save-state').textContent = t; }
+let SNAP = '';
+function snapNow(){ try{ return JSON.stringify(serialize()); }catch(e){ return Math.random()+''; } }
+function markSaved(){ SNAP = snapNow(); }
+function isSaved(){ return S.persisted && SNAP === snapNow(); }
+function needSave(){
+  if(isSaved()) return false;
+  toast('Please save the quotation first (Save button), then generate the PDF or email.', 5000);
+  return true;
+}
+let _dirtyT = null;
+function watchDirty(){
+  const f = () => { clearTimeout(_dirtyT); _dirtyT = setTimeout(() => { if(S.persisted && !isSaved()) setSaveState('Unsaved changes'); else if(!S.persisted) setSaveState('Not saved yet'); }, 250); };
+  ['input','change','click'].forEach(ev => $('view-quote').addEventListener(ev, f));
+}
 
 function serialize(){
   const fields = {};
@@ -645,7 +723,7 @@ function buildRecord(){
   return {
     quote_no: gv('f-quotno'),
     created_by_email: S.createdBy || S.user,
-    created_by_name: gv('f-prepby') || fullName(S.user),
+    created_by_name: fullName(S.createdBy || S.user),
     mode: S.mode, direction: S.mode==='warehouse'?'':S.dir, load_type: loadLabel(),
     cargo_nature: S.cargo, cargo_type: ctypeLabel(), incoterm: S.inco,
     client_company: gv('f-company'), client_contact: gv('f-contact'), client_email: gv('f-email'),
@@ -671,6 +749,7 @@ async function saveQuote(quiet){
       if(res.conflict) throw new Error('Could not allocate a unique quote number');
       S.persisted = true; S.createdBy = rec.created_by_email;
     }
+    markSaved();
     setSaveState('Saved '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+(DB.cloud()?' (database)':' (this browser)'));
     if(!quiet) toast('Quotation '+gv('f-quotno')+' saved');
     return true;
@@ -689,7 +768,15 @@ function listHas(v, x){
 function round2(x){ return Math.round((x + Number.EPSILON)*100)/100; }
 
 // ---- currency
-function defFx(){ const f = DATA.fx || {}; return {rates:Object.assign({AED:1}, f.rates||{}), fee:(typeof f.fee==='number'?f.fee:0)}; }
+// company-wide rates: loaded from the database (fx_settings); falls back to the workbook defaults
+let GFX = null, GFX_ERR = '';
+function globalFx(){
+  const d = DATA.fx || {}, g = GFX || {};
+  const rates = Object.assign({AED:1}, d.rates||{}, g.rates||{}); rates.AED = 1;
+  const fee = (typeof g.fee==='number') ? g.fee : (typeof d.fee==='number' ? d.fee : 0);
+  return {rates, fee, asOf:g.updated_at||'', by:g.updated_by||''};
+}
+function defFx(){ return JSON.parse(JSON.stringify(globalFx())); }
 function defAllin(){ return {on:false, label:'All-in Freight & Charges', cats:{FREIGHT:true, ORIGIN:true, DESTINATION:true}}; }
 function fxRate(c){ const v = S.fx.rates[c]; return (typeof v==='number' && v>0) ? v : null; }
 function fxFactor(from, to, noFee){
@@ -726,7 +813,7 @@ function missingFx(){
 function buildCharges(){
   const prev = {};
   S.charges.forEach(s => s.rows.forEach(r => { if(r.id) prev[r.id] = r; }));
-  const custom = S.charges.map(s => ({sec:s.sec, cat:'OTHER', rows:s.rows.filter(r => !r.id)})).filter(s => s.rows.length);
+  const custom = []; S.charges.forEach(s => s.rows.forEach(r => { if(!r.id){ r.cat = r.cat || s.cat || 'OTHER'; custom.push(r); } }));
   const m = cap(S.mode), d = S.mode==='warehouse' ? 'ALL' : cap(S.dir), ld = loadLabel(), nat = cap(S.cargo);
   const groups = {}, whOrder = [];
   DATA.charges.forEach(c => {
@@ -754,9 +841,17 @@ function buildCharges(){
   const order = CAT_ORDER.concat(whOrder, ['OTHER']);
   const secs = order.filter(k => groups[k]).map(k => groups[k]);
   Object.keys(groups).forEach(k => { if(!order.includes(k)) secs.push(groups[k]); });
-  S.charges = secs.concat(custom);
+  custom.forEach(r => {
+    const c = r.cat || 'OTHER', key = c==='WAREHOUSE' ? 'WH:ADDED' : c;
+    let g = secs.find(s => (s.cat===c) && (c!=='WAREHOUSE' || s.sec==='WAREHOUSE' || true));
+    if(!g){ g = {sec: CAT_LABEL[c]||c, cat:c, rows:[]}; secs.push(g); }
+    g.rows.push(r);
+  });
+  S.charges = secs; sortSections();
 }
 
+function catRank(c){ const i = CAT_ORDER.indexOf(c); return i>=0 ? i : (c==='WAREHOUSE' ? 20 : 30); }
+function sortSections(){ S.charges.sort((a,b) => catRank(a.cat) - catRank(b.cat)); }
 function calc(){
   let sub = 0, vatBase = 0;
   S.charges.forEach(s => s.rows.forEach(r => {
@@ -802,11 +897,8 @@ function renderFx(){
   const names = (DATA.fx||{}).names || {};
   $('f-currency').innerHTML = keys.map(c => `<option value="${c}">${c}${names[c]?' – '+escHtml(names[c]):''}${fxRate(c)==null?' (rate missing)':''}</option>`).join('');
   $('f-currency').value = S.currency;
-  $('fx-fee').value = S.fx.fee ? Math.round(S.fx.fee*10000)/100 : '';
-  $('fx-rates').innerHTML = keys.filter(c => c!=='AED').map(c => {
-    const v = S.fx.rates[c];
-    return `<div class="fx-item"><b>1 ${c} =</b><input type="number" min="0" step="0.0001" data-fx="${c}" value="${v==null?'':v}" class="${fxRate(c)==null?'bad':''}" placeholder="rate"> AED</div>`;
-  }).join('');
+  const used = keys.filter(c => c!=='AED' && fxRate(c)!=null).map(c => '1 '+c+' = '+S.fx.rates[c]+' AED').join(' · ');
+  $('fx-summary').textContent = 'Rates in this quote: ' + (used || 'none set') + (S.fx.fee ? ' · transfer charge ' + Math.round(S.fx.fee*10000)/100 + '%' : '') + (GFX_ERR ? ' · (database not reachable, using default rates)' : '');
 }
 function renderAllinOpts(){
   const A = S.allin;
@@ -906,29 +998,22 @@ function initChargesEvents(){
     else S.charges.splice(si,1);
     renderCharges();
   });
-  const blank = () => ({d:'', u:'Per Shipment', ccy:S.currency, bill:'', pct:false, r:'', q:1, rem:'', rc:'Editable', on:true, vat:true, locked:false, cat:'OTHER'});
+  const blank = cat => ({d:'', u:'Per Shipment', ccy:S.currency, bill:'', pct:false, r:'', q:1, rem:'', rc:'Editable', on:true, vat:true, locked:false, cat});
   $('btn-add-row').addEventListener('click', () => {
-    if(!S.charges.length) S.charges.push({sec:'ADDITIONAL CHARGES', cat:'OTHER', rows:[]});
-    S.charges[S.charges.length-1].rows.push(blank());
+    const cat = $('add-sec-sel').value;
+    let sec = S.charges.find(s => s.cat===cat);
+    if(!sec){ sec = {sec:CAT_LABEL[cat]||cat, cat, rows:[]}; S.charges.push(sec); sortSections(); }
+    sec.rows.push(blank(cat));
     renderCharges();
-  });
-  $('btn-add-sec').addEventListener('click', () => {
-    const name = ($('new-sec-name').value || 'ADDITIONAL CHARGES').trim().toUpperCase(); $('new-sec-name').value = '';
-    S.charges.push({sec:name, cat:'OTHER', rows:[blank()]});
-    renderCharges();
+    const tr = $('charges-body').querySelector(`tr[data-si="${S.charges.indexOf(sec)}"][data-ri="${sec.rows.length-1}"] input[data-key="d"]`);
+    if(tr){ tr.scrollIntoView({block:'center'}); tr.focus(); }
   });
   $('disc-type').addEventListener('change', e => { S.disc.type = e.target.value; updateTotals(); });
   $('disc-val').addEventListener('input', e => { S.disc.val = e.target.value; updateTotals(); });
   $('f-vat').addEventListener('change', e => { S.vatRate = parseFloat(e.target.value); updateTotals(); });
   // currency
   $('f-currency').addEventListener('change', e => { S.currency = e.target.value; renderCharges(); });
-  $('fx-fee').addEventListener('input', e => { S.fx.fee = Math.max(0, num(e.target.value))/100; renderCharges(); });
-  $('fx-rates').addEventListener('input', e => {
-    const c = e.target.dataset.fx; if(!c) return;
-    const v = parseFloat(e.target.value); S.fx.rates[c] = (v>0 ? v : null);
-    e.target.classList.toggle('bad', !(v>0)); renderCharges();
-  });
-  $('fx-reset').addEventListener('click', () => { S.fx = defFx(); renderFx(); renderCharges(); });
+  $('fx-reset').addEventListener('click', async () => { await loadGlobalFx(); S.fx = defFx(); renderFx(); renderCharges(); toast('Latest company rates applied'); });
   // all-in
   $('allin-on').addEventListener('change', e => { S.allin.on = e.target.checked; renderAllinOpts(); updateTotals(); });
   $('allin-label').addEventListener('input', e => { S.allin.label = e.target.value; updateTotals(); });
@@ -1002,15 +1087,16 @@ function initChips(){
   $('inco-desc').textContent = INCO_DESC[S.inco];
 }
 function updateModeUI(){
-  const wh = S.mode==='warehouse', air = S.mode==='air';
+  const wh = S.mode==='warehouse', air = S.mode==='air', cou = S.mode==='courier';
   $('sec-direction').classList.toggle('hidden', wh);
-  $('sec-container').classList.toggle('hidden', wh || air);
+  $('sec-container').classList.toggle('hidden', wh || air || cou);
   $('chips-cnt').querySelectorAll('.chip').forEach(c => {
     if(c.dataset.val==='fcl') c.textContent = S.mode==='land' ? 'FTL' : 'FCL';
     if(c.dataset.val==='lcl') c.textContent = S.mode==='land' ? 'LTL' : 'LCL';
   });
   const polL=$('lbl-pol'), podL=$('lbl-pod'), delL=$('lbl-delivery');
   if(air){ polL.textContent='Airport of Origin'; podL.textContent='Airport of Destination'; delL.textContent='Place of Delivery'; }
+  else if(cou){ polL.textContent='Origin (City / Address)'; podL.textContent='Destination (City / Address)'; delL.textContent='Place of Delivery'; }
   else if(S.mode==='land'){ polL.textContent='Loading Point / Origin'; podL.textContent='Delivery Point / Destination'; delL.textContent='Final Delivery Location'; }
   else if(wh){ polL.textContent='Warehouse Location'; podL.textContent='(N/A)'; delL.textContent='Delivery Point (if applicable)'; }
   else { polL.textContent='Port of Loading (POL)'; podL.textContent='Port of Discharge (POD)'; delL.textContent='Final Place of Delivery'; }
@@ -1041,6 +1127,14 @@ function renderCargoFields(){
     h += fld('Chargeable Weight (KG)','f-chargewt','text','Higher of actual or volumetric');
     h += fld('No. of Pieces / Pallets','f-pkgs','text','');
     h += fld('Airline / Routing Preference','f-carrier','text','e.g., Emirates SkyCargo');
+  }
+  if(S.mode==='courier'){
+    h += fld('Shipment Type','f-shiptype','select',['Parcel / Package','Documents','Mixed']);
+    h += fld('Actual Weight (KG)','f-weight','text','');
+    h += fld('Dimensions (L×W×H cm)','f-dims','text','Per package');
+    h += fld('Chargeable Weight (KG)','f-chargewt','text','Higher of actual or L×W×H ÷ 5000');
+    h += fld('No. of Pieces','f-pkgs','text','');
+    h += fld('Courier / Service Level','f-carrier','text','e.g., DHL Express, FedEx Priority');
   }
   if(S.mode==='land'){
     h += fld('Truck Type','f-trucktype','select',["40' Trailer (FTL)","20' Flatbed (FTL)","Curtain Side","Reefer Truck","LTL — loose cargo"]);
@@ -1118,7 +1212,7 @@ function buildPdf(scale, multi){
   const W=210, H=297, ml=10, mr=10, cw=W-ml-mr, FOOT=12, LIMIT=H-FOOT-1.5;
   const C = calc(), cur = S.currency;
   const company = ST.company_name || 'Sasco Global Shipping LLC';
-  const NAVY=[27,42,74], NAVY2=[46,77,139], ORANGE=[232,99,10], ALT=[235,241,248], WHITE=[255,255,255], GOLD=[245,197,24], ORA_LT=[253,235,208];
+  const NAVY=[1,139,206], NAVY2=[1,114,168], ORANGE=[238,245,241], ALT=[235,241,248], WHITE=[255,255,255], GOLD=[230,245,255], ORA_LT=[246,250,248];
   const fsz = (base,min) => Math.max(min, base*scale);
   const quotNo = gv('f-quotno'), quotDate = gv('f-date') || todayISO();
   let overflow = false, y = 0;
@@ -1127,10 +1221,17 @@ function buildPdf(scale, multi){
     if(first){
       doc.setFillColor(...NAVY); doc.rect(0,0,W,22,'F');
       doc.setFillColor(...ORANGE); doc.rect(0,0,5,22,'F'); doc.rect(0,22,W,1.6,'F');
+      let tx = 11;
+      if(LOGO){
+        const lh = 17.6, lw = Math.min(40, lh*LOGO_RATIO);
+        doc.setFillColor(...WHITE); doc.roundedRect(8.5, 2.2, lw+2, lh+0.4, 1.5, 1.5, 'F');
+        try{ doc.addImage(LOGO, /^data:image\/jpe?g/i.test(LOGO)?'JPEG':'PNG', 9.5, 2.9, lw, lh-1); }catch(e){}
+        tx = 8.5 + lw + 6;
+      }
       doc.setFont('helvetica','bold'); doc.setFontSize(14.5); doc.setTextColor(...WHITE);
-      doc.text(pdfSafe(company.toUpperCase()), 11, 9.5);
+      doc.text(pdfSafe(company.toUpperCase()), tx, 9.5);
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...WHITE);
-      const fit = (t, yy) => { let fs = 7; doc.setFontSize(fs); while(doc.getTextWidth(t) > 118 && fs > 4.6){ fs -= 0.2; doc.setFontSize(fs); } doc.text(t, 11, yy); };
+      const fit = (t, yy) => { let fs = 7; doc.setFontSize(fs); while(doc.getTextWidth(t) > 118 - (tx-11) && fs > 4.6){ fs -= 0.2; doc.setFontSize(fs); } doc.text(t, tx, yy); };
       fit(pdfSafe(ST.address||''), 14.4);
       fit(pdfSafe([ST.phone, ST.website, ST.company_email||'sasco@sascoglobal.com', ST.trn?'TRN '+ST.trn:''].filter(Boolean).join('  |  ')), 18.6);
       doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...WHITE);
@@ -1185,8 +1286,8 @@ function buildPdf(scale, multi){
 
   // shipment details
   bar('SHIPMENT DETAILS');
-  const polL = S.mode==='air'?'Airport of Origin':S.mode==='land'?'Loading Point':S.mode==='warehouse'?'Warehouse':'Port of Loading';
-  const podL = S.mode==='air'?'Airport of Destination':S.mode==='land'?'Delivery Point':'Port of Discharge';
+  const polL = S.mode==='air'?'Airport of Origin':S.mode==='courier'?'Origin':S.mode==='land'?'Loading Point':S.mode==='warehouse'?'Warehouse':'Port of Loading';
+  const podL = S.mode==='air'?'Airport of Destination':S.mode==='courier'?'Destination':S.mode==='land'?'Delivery Point':'Port of Discharge';
   const ship = [[polL,gv('f-pol'),'Final Delivery',gv('f-delivery')],[S.mode==='warehouse'?'':podL,S.mode==='warehouse'?'':gv('f-pod'),'Commodity',gv('f-commodity')]];
   const ids = ['f-cntype','f-numcnt','f-weight','f-carrier','f-cbm','f-pkgs','f-dims','f-volwt','f-chargewt','f-pallets','f-storedur','f-skus','f-trucktype','f-transit','f-special'];
   const ex = [];
@@ -1243,7 +1344,7 @@ function buildPdf(scale, multi){
   let ty = y;
   trows.forEach(([lbl,val,bg,g]) => {
     doc.setFillColor(...bg); doc.rect(tX,ty,tW,trh,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(g?fsz(9.4,7.6):fsz(8.4,6.8)); doc.setTextColor(...(g?WHITE:[40,40,40]));
+    doc.setFont('helvetica','bold'); doc.setFontSize(g?fsz(9.4,7.6):fsz(8.4,6.8)); doc.setTextColor(...(g?NAVY2:[40,40,40]));
     doc.text(lbl, tX+3, ty+trh*0.7); doc.text(val, tX+tW-3, ty+trh*0.7, {align:'right'}); ty += trh;
   });
   if(notes){
@@ -1284,13 +1385,16 @@ function buildPdf(scale, multi){
   const sy = multi ? y : Math.max(y, LIMIT - sigH);
   const sigW = cw/3, heads = ['Prepared By: '+company, 'Authorised Signatory', 'Customer Acceptance & Signature'];
   const sl = ['Name / Designation:','Signature, Date & Stamp:'];
+  const prepT = teamOf(S.createdBy || S.user), prepName = (gv('f-prepby') || fullName(S.createdBy || S.user)) + (prepT && prepT.role ? ' / ' + prepT.role : '');
   heads.forEach((h,i) => {
     const x = ml + i*sigW;
     doc.setFillColor(...ALT); doc.rect(x,sy,sigW-2,4.4,'F');
     doc.setFont('helvetica','bold'); doc.setFontSize(fsz(7.2,6)); doc.setTextColor(40,40,40); doc.text(pdfSafe(h), x+2, sy+3.1, {maxWidth:sigW-6});
     doc.setDrawColor(200,205,215); doc.rect(x, sy+4.4, sigW-2, sigH-4.4);
     doc.setFont('helvetica','normal'); doc.setFontSize(fsz(6.4,5.4)); doc.setTextColor(120,120,120);
-    doc.text(sl[0], x+2, sy+4.4+3.4); doc.text(sl[1], x+2, sy+sigH-1.8);
+    if(i===0){ doc.setFont('helvetica','bold'); doc.setTextColor(40,40,40); doc.text(pdfSafe(prepName), x+2, sy+4.4+3.4, {maxWidth:sigW-6}); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120); }
+    else doc.text(sl[0], x+2, sy+4.4+3.4);
+    doc.text(sl[1], x+2, sy+sigH-1.8);
   });
   y = sy + sigH;
 
@@ -1327,13 +1431,13 @@ function fxBlocked(){
   return false;
 }
 async function generatePDF(){
+  if(needSave()) return;
   if(fxBlocked()) return;
   const miss = missingRates();
   if(miss && !confirm(miss+' included charge line(s) have no rate. Continue anyway?')) return;
   const {doc} = makePdf();
-  await saveQuote(true);
   doc.save(`Sasco_Quotation_${gv('f-quotno')}_${gv('f-date')||todayISO()}.pdf`);
-  toast('PDF generated and quotation saved');
+  toast('PDF generated');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1397,6 +1501,7 @@ function buildEmail(){
 }
 let EMAIL = null;
 async function openEmail(){
+  if(needSave()) return;
   if(fxBlocked()) return;
   const miss = missingRates();
   if(miss && !confirm(miss+' included charge line(s) have no rate. Continue anyway?')) return;
@@ -1405,7 +1510,6 @@ async function openEmail(){
   $('em-subj').textContent = EMAIL.subject;
   $('em-preview').innerHTML = EMAIL.html;
   $('email-modal').classList.remove('hidden');
-  await saveQuote(true);
 }
 async function copyEmail(){
   try{
@@ -1435,7 +1539,13 @@ function mailtoEmail(){
 // ═══════════════════════════════════════════════════════════════
 let QUOTES = [];
 async function loadDash(){
-  try{ QUOTES = await DB.list(); }catch(e){ toast(e.message, 5000); QUOTES = []; }
+  const box = $('dash-err'); box.classList.add('hidden');
+  try{ QUOTES = await DB.list(); }
+  catch(e){
+    QUOTES = [];
+    box.classList.remove('hidden');
+    box.innerHTML = '<b>Could not load quotations from the database.</b> ' + escHtml(e.message||'') + ' The Supabase project is probably paused or offline. Open the Supabase dashboard, restore the project, then press Refresh. Nothing has been lost: saved quotations are still in the database.';
+  }
   renderDash();
 }
 function renderDash(){
@@ -1475,11 +1585,60 @@ function exportCsv(){
   const csv = [cols.join(',')].concat(filteredQuotes().map(q => cols.map(c => esc(q[c])).join(','))).join('\r\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = 'sasco_quotations.csv'; a.click();
 }
+async function loadGlobalFx(){
+  if(!DB.cloud()){ renderFxView(); return; }
+  try{
+    const row = await DB.fxGet();
+    if(row){ GFX = {rates:row.rates||{}, fee:+row.fee||0, updated_at:row.updated_at, updated_by:row.updated_by}; }
+    GFX_ERR = '';
+  }catch(e){ GFX_ERR = e.message||'error'; }
+  renderFxView();
+}
+let FXD = null;
+function renderFxView(){
+  const g = globalFx(), admin = (S.user === CONFIG.FX_ADMIN);
+  if(!FXD || !admin) FXD = JSON.parse(JSON.stringify(g));
+  const names = (DATA.fx||{}).names || {};
+  $('fx-meta').textContent = GFX_ERR ? ('Database not reachable ('+GFX_ERR+'). Showing the default rates from the workbook.')
+    : (g.asOf ? 'Last updated '+String(g.asOf).slice(0,16).replace('T',' ')+' by '+(g.by||'?') : 'No company rates saved yet. Showing the workbook defaults.');
+  $('fx-table').innerHTML = '<tr><th>Currency</th><th>Name</th><th style="text-align:right;">AED per 1 unit</th></tr>' +
+    Object.keys(FXD.rates).map(c => {
+      const v = FXD.rates[c];
+      const cell = c==='AED' ? '1' : (admin ? `<input type="number" min="0" step="0.0001" data-fxc="${c}" value="${v==null?'':v}" placeholder="not set">` : (v==null?'<span style="color:#dc2626;">not set</span>':v));
+      return `<tr><td><b>${c}</b></td><td>${escHtml(names[c]||'')}</td><td style="text-align:right;">${cell}</td></tr>`;
+    }).join('');
+  $('fx-fee-box').innerHTML = admin ? `<input type="number" id="fx-fee-in" min="0" step="0.01" value="${FXD.fee?Math.round(FXD.fee*10000)/100:''}" placeholder="0" style="width:90px;border:1.5px solid var(--border);border-radius:8px;padding:6px 8px;">` : `<b>${Math.round(g.fee*10000)/100}%</b>`;
+  $('fx-admin').classList.toggle('hidden', !admin);
+  if(!admin) $('fx-meta').textContent += '. Only ' + CONFIG.FX_ADMIN + ' can change these rates.';
+}
+function initFxView(){
+  $('fx-table').addEventListener('input', e => { const c = e.target.dataset.fxc; if(!c) return; const v = parseFloat(e.target.value); FXD.rates[c] = v>0 ? v : null; });
+  $('fx-fee-box').addEventListener('input', e => { if(e.target.id==='fx-fee-in') FXD.fee = Math.max(0, num(e.target.value))/100; });
+  $('fx-add').addEventListener('click', () => {
+    const c = gv('fx-new-code').trim().toUpperCase().replace(/[^A-Z]/g,''), v = parseFloat($('fx-new-rate').value);
+    if(c.length<3){ toast('Enter a 3-letter currency code'); return; }
+    FXD.rates[c] = v>0 ? v : null; $('fx-new-code').value = ''; $('fx-new-rate').value = ''; renderFxView();
+  });
+  $('fx-save').addEventListener('click', async () => {
+    if(S.user !== CONFIG.FX_ADMIN) return;
+    const pin = gv('fx-pin'), msg = $('fx-save-msg');
+    if(!pin){ msg.textContent = 'Enter the admin PIN.'; return; }
+    if(!DB.cloud()){ msg.textContent = 'Connect the database first.'; return; }
+    msg.textContent = 'Saving…';
+    try{
+      await DB.fxSave(pin, FXD.rates, FXD.fee, S.user);
+      $('fx-pin').value = ''; msg.textContent = 'Saved. All users now get these rates.';
+      await loadGlobalFx(); if(!S.persisted){ S.fx = defFx(); renderFx(); renderCharges(); }
+    }catch(e){ msg.textContent = 'Not saved: '+e.message; }
+  });
+  $('nav-fx').addEventListener('click', () => showView('fx'));
+}
 function showView(v){
   if(v==='dash' && S.user && !canDash(S.user)) v = 'quote';
   $('view-quote').classList.toggle('hidden', v!=='quote'); $('gen-bar').classList.toggle('hidden', v!=='quote');
-  $('view-dash').classList.toggle('hidden', v!=='dash');
-  $('nav-quote').classList.toggle('active', v==='quote'); $('nav-dash').classList.toggle('active', v==='dash');
+  $('view-dash').classList.toggle('hidden', v!=='dash'); $('view-fx').classList.toggle('hidden', v!=='fx');
+  $('nav-quote').classList.toggle('active', v==='quote'); $('nav-dash').classList.toggle('active', v==='dash'); $('nav-fx').classList.toggle('active', v==='fx');
+  if(v==='fx'){ FXD = null; loadGlobalFx(); }
   if(v==='dash') loadDash();
 }
 
@@ -1487,6 +1646,7 @@ function showView(v){
 // INIT
 // ═══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  if(LOGO){ document.querySelectorAll('.logo-sq').forEach(el => { const i = document.createElement('img'); i.src = LOGO; i.alt = 'Sasco'; i.className = 'hdr-logo'; el.replaceWith(i); }); }
   $('hdr-company').textContent = (ST.company_name || 'Sasco Global Shipping LLC').toUpperCase();
   $('hdr-contact').textContent = contactLine();
   document.title = (ST.company_name || 'Sasco Global Shipping LLC') + ' – Quotation Generator';
@@ -1509,7 +1669,9 @@ document.addEventListener('DOMContentLoaded', () => {
   $('dash-search').addEventListener('input', renderQuoteTable);
   $('dash-csv').addEventListener('click', exportCsv);
   $('dash-refresh').addEventListener('click', loadDash);
+  watchDirty(); initFxView();
   initGate();
+  loadGlobalFx().then(() => { if(!S.persisted){ S.fx = defFx(); renderFx(); renderCharges(); } });
   if(!S.user) $('f-quotno').value = quotePrefix() + '0001';
   $('mode-banner').classList.toggle('hidden', DB.cloud());
 });
