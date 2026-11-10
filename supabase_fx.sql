@@ -21,7 +21,7 @@ create policy fx_read on public.fx_settings for select to anon using (true);
 -- no insert/update/delete policies on fx_settings, and no policies at all on app_admin: the browser cannot write rates or read the PIN directly.
 
 -- Admin PIN (stored hashed). To change it later, run:  update public.app_admin set pin_hash = extensions.crypt('NEW PIN', extensions.gen_salt('bf')) where id = 1;
-insert into public.app_admin (id, pin_hash) values (1, extensions.crypt('SascoFX-76U6K5IH', extensions.gen_salt('bf')))
+insert into public.app_admin (id, pin_hash) values (1, extensions.crypt('2311', extensions.gen_salt('bf')))
 on conflict (id) do nothing;
 
 create or replace function public.save_fx(p_pin text, p_rates jsonb, p_fee numeric, p_by text)
