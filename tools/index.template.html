@@ -9,7 +9,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#018bce;--navy2:#0172a8;--blue:#018bce;--on-orange:#0b3b55;
+  --navy:#0b4a75;--navy2:#0079b4;--blue:#018bce;--on-orange:#0b3b55;
   --orange:#eef5f1;--orange-lt:#f6faf8;--alt:#EBF1F8;
   --gold:#F5C518;--white:#fff;--text:#1a202c;
   --muted:#6b7280;--border:#d1d5db;--bg:#f0f4f8;
@@ -1212,7 +1212,7 @@ function buildPdf(scale, multi){
   const W=210, H=297, ml=10, mr=10, cw=W-ml-mr, FOOT=12, LIMIT=H-FOOT-1.5;
   const C = calc(), cur = S.currency;
   const company = ST.company_name || 'Sasco Global Shipping LLC';
-  const NAVY=[1,139,206], NAVY2=[1,114,168], ORANGE=[238,245,241], ALT=[235,241,248], WHITE=[255,255,255], GOLD=[230,245,255], ORA_LT=[246,250,248];
+  const NAVY=[11,74,117], NAVY2=[0,121,180], ORANGE=[238,245,241], ALT=[235,241,248], WHITE=[255,255,255], GOLD=[230,245,255], ORA_LT=[246,250,248];
   const fsz = (base,min) => Math.max(min, base*scale);
   const quotNo = gv('f-quotno'), quotDate = gv('f-date') || todayISO();
   let overflow = false, y = 0;
