@@ -592,7 +592,8 @@ function validEmail(e){
   return re.test((e||'').trim());
 }
 function teamOf(e){ return (DATA.team||[]).find(x => x.email === (e||'').trim().toLowerCase()); }
-function canDash(e){ const t = teamOf(e); return (DATA.team||[]).length ? !!(t && t.dash) : true; }
+function canDash(e){ return !!e; }   // everyone signed in has a dashboard
+function seesAll(e){ const t = teamOf(e); return (DATA.team||[]).length ? !!(t && t.dash) : true; }   // owners/managers see every quote; others only their own
 function enterApp(email){
   const t = teamOf(email);
   if(t && t.active === false){ $('gate').classList.remove('hidden'); $('gate-err').textContent = 'Access for this email has been disabled. Contact the administrator.'; try{ localStorage.removeItem('sasco_user'); }catch(e){} return false; }
@@ -1540,7 +1541,7 @@ function mailtoEmail(){
 let QUOTES = [];
 async function loadDash(){
   const box = $('dash-err'); box.classList.add('hidden');
-  try{ QUOTES = await DB.list(); }
+  try{ QUOTES = await DB.list(); if(!seesAll(S.user)) QUOTES = QUOTES.filter(q => (q.created_by_email||'').toLowerCase() === S.user); }
   catch(e){
     QUOTES = [];
     box.classList.remove('hidden');
@@ -1549,6 +1550,10 @@ async function loadDash(){
   renderDash();
 }
 function renderDash(){
+  const all = seesAll(S.user);
+  $('dash-people').closest('.card').classList.toggle('hidden', !all);
+  $('dash-filter').classList.toggle('hidden', !all);
+  $('dash-quotes').closest('.card').querySelector('h2').textContent = all ? 'All quotations' : 'My quotations';
   const by = {};
   const ym = new Date().toISOString().slice(0,7);
   QUOTES.forEach(q => {
@@ -1577,7 +1582,11 @@ function renderQuoteTable(){
   const rows = filteredQuotes();
   $('dash-quotes').innerHTML = '<tr><th>Quote No.</th><th>Date</th><th>Salesperson</th><th>Client</th><th>Service</th><th>Incoterm</th><th>Total</th><th></th></tr>' +
     (rows.map((q,i) => `<tr><td>${escHtml(q.quote_no)}</td><td>${String(q.created_at).slice(0,10)}</td><td>${escHtml(q.created_by_name||q.created_by_email)}</td><td>${escHtml(q.client_company||'')}</td><td>${escHtml([cap(q.mode),q.direction,q.load_type&&q.load_type!=='ALL'?q.load_type:'',q.cargo_type].filter(Boolean).join(' / '))}</td><td>${escHtml(q.incoterm||'')}</td><td>${escHtml(q.currency)} ${money(+q.total||0)}</td><td><a data-open="${i}">Open</a></td></tr>`).join('') || '<tr><td colspan="8">No quotations match.</td></tr>');
-  $('dash-quotes').querySelectorAll('[data-open]').forEach(a => a.addEventListener('click', () => openQuote(rows[+a.dataset.open])));
+  $('dash-quotes').querySelectorAll('[data-open]').forEach(a => a.addEventListener('click', () => {
+    const q = rows[+a.dataset.open];
+    if(!seesAll(S.user) && (q.created_by_email||'').toLowerCase() !== S.user){ toast('You can only open your own quotations.'); return; }
+    openQuote(q);
+  }));
 }
 function exportCsv(){
   const cols = ['quote_no','created_at','created_by_name','created_by_email','mode','direction','load_type','cargo_nature','cargo_type','incoterm','client_company','client_contact','client_email','currency','subtotal','discount','vat','total'];
